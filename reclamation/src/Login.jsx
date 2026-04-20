@@ -78,6 +78,12 @@ export default function Login() {
   const [showPwd, setShowPwd] = useState(false);
   const roles = ["Employé", "Responsable", "Admin"];
 
+  const handleLogin = () => {
+    if (role === "Admin")       navigate("/dashboard");
+    else if (role === "Employé") navigate("/employee");
+    else                        navigate("/employee"); // Responsable → à adapter
+  };
+
   return (
     <>
       <style>{CSS}</style>
@@ -110,21 +116,30 @@ export default function Login() {
               Entrez vos identifiants professionnels
             </p>
 
+            {/* Sélecteur de rôle */}
             <div className="role-tabs">
-              {roles.map(r => (
-                <button key={r} className={`role-tab${role === r ? " active" : ""}`} onClick={() => setRole(r)}>{r}</button>
+              {roles.map((r) => (
+                <button
+                  key={r}
+                  className={`role-tab${role === r ? " active" : ""}`}
+                  onClick={() => setRole(r)}
+                >
+                  {r}
+                </button>
               ))}
             </div>
 
             <label className="field-label">Adresse email</label>
             <div className="field-wrap">
               <span className="field-icon">✉</span>
-              <input className="field-input" type="email" placeholder="nom@bayan.fr" />
+              <input className="field-input" type="email" placeholder="nom@bayan.ma" />
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <label className="field-label" style={{ marginBottom: 0 }}>Mot de passe</label>
-              <a href="#" style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500, textDecoration: "none" }}>Mot de passe oublié ?</a>
+              <a href="#" style={{ fontSize: 12, color: "#4F46E5", fontWeight: 500, textDecoration: "none" }}>
+                Mot de passe oublié ?
+              </a>
             </div>
             <div className="field-wrap">
               <span className="field-icon">🔒</span>
@@ -134,10 +149,7 @@ export default function Login() {
               </button>
             </div>
 
-            <button className="btn-submit" onClick={() => {
-              if (role === "Admin") navigate("/dashboard");
-              else navigate("/");
-            }}>
+            <button className="btn-submit" onClick={handleLogin}>
               Se connecter
             </button>
 

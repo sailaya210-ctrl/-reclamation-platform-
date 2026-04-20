@@ -4,15 +4,18 @@ import Fonctionnalites from "./Fonctionnalites";
 import APropos from "./APropos";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+import EmployeeDashboard from "./EmployeeDashboard";
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Accueil />} />
+        <Route path="/"                element={<Accueil />} />
         <Route path="/fonctionnalites" element={<Fonctionnalites />} />
-        <Route path="/a-propos" element={<APropos />} />
-        <Route path="/login" element={<Login />} />
-         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/a-propos"        element={<APropos />} />
+        <Route path="/login"           element={<Login />} />
+        <Route path="/dashboard"       element={<Dashboard />} />
+        <Route path="/employee"        element={<EmployeeDashboard />} />
       </Routes>
     </BrowserRouter>
   );
