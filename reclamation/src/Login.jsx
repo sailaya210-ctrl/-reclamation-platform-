@@ -134,7 +134,10 @@ export default function Login() {
               </button>
             </div>
 
-            <button className="btn-submit" onClick={() => navigate("/")}>
+            <button className="btn-submit" onClick={() => {
+              if (role === "Admin") navigate("/dashboard");
+              else navigate("/");
+            }}>
               Se connecter
             </button>
 

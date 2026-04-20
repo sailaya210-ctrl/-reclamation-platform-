@@ -3,7 +3,7 @@ import Accueil from "./Accueil";
 import Fonctionnalites from "./Fonctionnalites";
 import APropos from "./APropos";
 import Login from "./Login";
-
+import Dashboard from "./Dashboard";
 export default function App() {
   return (
     <BrowserRouter>
@@ -12,6 +12,7 @@ export default function App() {
         <Route path="/fonctionnalites" element={<Fonctionnalites />} />
         <Route path="/a-propos" element={<APropos />} />
         <Route path="/login" element={<Login />} />
+         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
