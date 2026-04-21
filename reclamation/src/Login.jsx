@@ -79,9 +79,9 @@ export default function Login() {
   const roles = ["Employé", "Responsable", "Admin"];
 
   const handleLogin = () => {
-    if (role === "Admin")       navigate("/dashboard");
-    else if (role === "Employé") navigate("/employee");
-    else                        navigate("/employee"); // Responsable → à adapter
+   if (role === "Admin") navigate("/dashboard");
+else if (role === "Responsable") navigate("/responsable");
+else navigate("/employee");
   };
 
   return (
