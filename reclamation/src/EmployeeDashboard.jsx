@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── CSS ────────────────────────────────────────────────────────────────────
@@ -7,16 +7,15 @@ const CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: #F4F5FA; color: #0F1117; }
 
-  /* ── LAYOUT ── */
   .emp-layout { display: flex; min-height: 100vh; }
 
-  /* ── SIDEBAR ── */
+  /* SIDEBAR */
   .emp-sidebar { width: 220px; background: #fff; border-right: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; }
   .emp-sidebar-logo { display: flex; align-items: center; gap: 8px; padding: 20px 20px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); }
   .emp-sidebar-logo span { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 15.5px; color: #0F1117; letter-spacing: -0.3px; }
   .emp-sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
   .emp-nav-section { font-size: 9.5px; font-weight: 600; color: #B0B7C3; letter-spacing: 0.9px; text-transform: uppercase; padding: 10px 10px 4px; }
-  .emp-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; cursor: pointer; font-size: 13.5px; color: #6B7280; font-weight: 400; transition: all 0.18s; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; position: relative; }
+  .emp-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; cursor: pointer; font-size: 13.5px; color: #6B7280; font-weight: 400; transition: all 0.18s; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; }
   .emp-nav-item:hover { background: #F4F5FA; color: #0F1117; }
   .emp-nav-item.active { background: #EEF2FF; color: #4F46E5; font-weight: 500; }
   .emp-nav-badge { margin-left: auto; background: #4F46E5; color: #fff; font-size: 10px; font-weight: 700; border-radius: 99px; padding: 1px 7px; }
@@ -25,46 +24,46 @@ const CSS = `
   .emp-user-name { font-size: 13px; font-weight: 500; color: #0F1117; }
   .emp-user-role { font-size: 10.5px; color: #9CA3AF; }
 
-  /* ── MAIN CONTENT ── */
+  /* MAIN */
   .emp-main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-  /* ── TOPBAR ── */
+  /* TOPBAR */
   .emp-topbar { height: 60px; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 40; }
   .emp-topbar-title { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #0F1117; letter-spacing: -0.4px; }
-  .emp-search-wrap { position: relative; width: 280px; }
-  .emp-search-bar { display: flex; align-items: center; gap: 8px; background: #F4F5FA; border: 1.5px solid #E5E7EB; border-radius: 10px; padding: 8px 14px; transition: all 0.2s; }
-  .emp-search-bar.focused { border-color: #4F46E5; background: #fff; box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
+  .emp-search-bar { display: flex; align-items: center; gap: 8px; background: #F4F5FA; border: 1.5px solid #E5E7EB; border-radius: 10px; padding: 8px 14px; transition: all 0.2s; width: 260px; }
   .emp-search-bar input { background: none; border: none; outline: none; font-size: 13px; color: #0F1117; width: 100%; font-family: 'DM Sans', sans-serif; }
   .emp-search-bar input::placeholder { color: #9CA3AF; }
   .emp-topbar-right { display: flex; align-items: center; gap: 10px; }
   .emp-icon-btn { width: 36px; height: 36px; border-radius: 9px; border: 1px solid #E5E7EB; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.15s; }
   .emp-icon-btn:hover { background: #F4F5FA; }
-  .emp-notif-count { position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: #EF4444; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: #fff; }
+  .emp-notif-dot { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: #EF4444; border: 2px solid #fff; font-size: 8px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; }
   .emp-btn-new { background: #4F46E5; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
   .emp-btn-new:hover { background: #4338CA; }
 
-  /* ── PAGE BODY ── */
+  /* PAGE BODY */
   .emp-page-body { padding: 28px 32px; flex: 1; }
 
-  /* ── FILTERS ── */
-  .emp-filters { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-  .emp-filter-label { font-size: 12px; color: #6B7280; font-weight: 500; margin-right: 2px; }
-  .emp-filter-btn { padding: 6px 14px; border-radius: 99px; border: 1.5px solid #E5E7EB; background: #fff; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #6B7280; font-weight: 400; transition: all 0.15s; }
+  /* FILTERS */
+  .emp-filters { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .emp-filter-label { font-size: 12px; color: #6B7280; font-weight: 500; }
+  .emp-filter-btn { padding: 6px 14px; border-radius: 99px; border: 1.5px solid #E5E7EB; background: #fff; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #6B7280; transition: all 0.15s; }
   .emp-filter-btn:hover { border-color: #4F46E5; color: #4F46E5; }
   .emp-filter-btn.active { background: #4F46E5; color: #fff; border-color: #4F46E5; font-weight: 500; }
 
-  /* ── KANBAN ── */
+  /* KANBAN */
   .emp-kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .emp-col { background: #F9FAFB; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); overflow: hidden; }
+  .emp-col { background: #F9FAFB; border-radius: 14px; border: 2px solid transparent; overflow: hidden; transition: border-color 0.2s, background 0.2s; }
+  .emp-col.drag-over { border-color: #4F46E5; background: #FAFBFF; }
   .emp-col-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); background: #fff; }
   .emp-col-title { font-size: 12.5px; font-weight: 500; color: #374151; display: flex; align-items: center; gap: 7px; }
   .emp-col-dot { width: 8px; height: 8px; border-radius: 50%; }
   .emp-col-count { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #fff; border: 1px solid #E5E7EB; }
-  .emp-col-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 320px; }
+  .emp-col-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 340px; }
 
-  /* ── TICKET CARD ── */
-  .emp-card { background: #fff; border-radius: 12px; border: 1px solid rgba(0,0,0,0.07); padding: 13px 14px; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; }
-  .emp-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  /* CARD */
+  .emp-card { background: #fff; border-radius: 12px; border: 1px solid rgba(0,0,0,0.07); padding: 13px 14px; cursor: grab; transition: transform 0.18s, box-shadow 0.18s, opacity 0.2s; user-select: none; }
+  .emp-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+  .emp-card.dragging { opacity: 0.4; cursor: grabbing; transform: rotate(2deg) scale(1.03); box-shadow: 0 16px 40px rgba(0,0,0,0.2); }
   .emp-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .emp-card-id { font-family: monospace; font-size: 10.5px; color: #B0B7C3; }
   .emp-pri-badge { font-size: 9.5px; font-weight: 700; padding: 3px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -75,38 +74,51 @@ const CSS = `
   .emp-card-title { font-size: 13px; font-weight: 500; color: #111827; margin-bottom: 8px; line-height: 1.4; }
   .emp-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .emp-tag { font-size: 10.5px; color: #6B7280; background: #F3F4F6; padding: 2px 7px; border-radius: 4px; }
-  .emp-prog-wrap { margin-bottom: 10px; }
-  .emp-prog-bg { height: 3px; background: #F0F0F0; border-radius: 99px; overflow: hidden; }
-  .emp-prog-fill { height: 3px; border-radius: 99px; transition: width 0.3s; }
+  .emp-prog-bg { height: 3px; background: #F0F0F0; border-radius: 99px; overflow: hidden; margin-bottom: 10px; }
+  .emp-prog-fill { height: 3px; border-radius: 99px; transition: width 0.5s ease; }
   .emp-card-footer { display: flex; align-items: center; justify-content: space-between; }
   .emp-card-date { font-size: 10.5px; color: #B0B7C3; display: flex; align-items: center; gap: 4px; }
   .emp-card-by { font-size: 10.5px; color: #4F46E5; font-weight: 500; }
-  .emp-empty-col { text-align: center; font-size: 12px; color: #B0B7C3; padding: 28px 0; }
 
-  /* ── DETAIL PANEL ── */
+  /* MOVE BUTTONS on card */
+  .emp-card-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #F3F4F6; }
+  .emp-move-btn { flex: 1; padding: 5px 6px; border-radius: 7px; border: 1px solid #E5E7EB; background: #F9FAFB; font-size: 10.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #6B7280; transition: all 0.15s; white-space: nowrap; }
+  .emp-move-btn:hover:not(:disabled) { background: #EEF2FF; border-color: #A5B4FC; color: #4F46E5; }
+  .emp-move-btn.fwd:hover:not(:disabled) { background: #D1FAE5; border-color: #6EE7B7; color: #059669; }
+  .emp-move-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+  /* DRAG HINT in empty col */
+  .emp-drop-hint { border: 2px dashed #C7D2FE; border-radius: 10px; padding: 28px 0; text-align: center; font-size: 11.5px; color: #A5B4FC; }
+
+  /* DETAIL PANEL */
   .emp-detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 400; display: flex; justify-content: flex-end; }
   .emp-detail-panel { width: 400px; background: #fff; height: 100%; overflow-y: auto; padding: 26px 22px; box-shadow: -8px 0 40px rgba(0,0,0,0.12); }
   .emp-detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
   .emp-detail-id { font-family: monospace; font-size: 11px; color: #9CA3AF; }
-  .emp-close-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #E5E7EB; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #6B7280; transition: background 0.15s; }
+  .emp-close-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #E5E7EB; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #6B7280; }
   .emp-close-btn:hover { background: #F4F5FA; }
   .emp-detail-title { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #0F1117; margin: 10px 0 8px; }
-  .emp-detail-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .emp-detail-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .emp-status-badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
   .emp-status-badge.attente { background: #F3F4F6; color: #4B5563; }
   .emp-status-badge.cours   { background: #FEF3C7; color: #92400E; }
   .emp-status-badge.resolu  { background: #D1FAE5; color: #065F46; }
   .emp-divider { height: 1px; background: #F3F4F6; margin: 14px 0; }
   .emp-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; }
-  .emp-detail-key { font-size: 12px; color: #9CA3AF; font-weight: 500; }
+  .emp-detail-key { font-size: 12px; color: #9CA3AF; }
   .emp-detail-val { font-size: 13px; color: #111827; font-weight: 500; }
-  .emp-prog-detail { margin: 4px 0 14px; }
-  .emp-prog-detail-bar { height: 6px; background: #F0F0F0; border-radius: 99px; overflow: hidden; margin-top: 6px; }
-  .emp-prog-detail-fill { height: 6px; border-radius: 99px; }
   .emp-section-title { font-size: 13px; font-weight: 600; color: #0F1117; margin-bottom: 10px; }
+  .emp-prog-detail-bar { height: 6px; background: #F0F0F0; border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .emp-prog-detail-fill { height: 6px; border-radius: 99px; transition: width 0.5s ease; }
 
-  /* ── TIMELINE ── */
-  .emp-timeline { display: flex; flex-direction: column; }
+  /* DETAIL MOVE BUTTONS */
+  .emp-detail-move-row { display: flex; gap: 8px; margin-top: 14px; }
+  .emp-detail-move-btn { flex: 1; padding: 9px 8px; border-radius: 9px; border: 1.5px solid #E5E7EB; background: #F9FAFB; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #6B7280; transition: all 0.2s; text-align: center; }
+  .emp-detail-move-btn:hover:not(:disabled) { background: #EEF2FF; border-color: #A5B4FC; color: #4F46E5; }
+  .emp-detail-move-btn.fwd:hover:not(:disabled) { background: #D1FAE5; border-color: #6EE7B7; color: #059669; }
+  .emp-detail-move-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+  /* TIMELINE */
   .emp-tl-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F9FAFB; }
   .emp-tl-item:last-child { border-bottom: none; }
   .emp-tl-icon { width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; margin-top: 1px; }
@@ -114,50 +126,49 @@ const CSS = `
   .emp-tl-text strong { color: #0F1117; font-weight: 600; }
   .emp-tl-time { font-size: 10.5px; color: #B0B7C3; margin-top: 2px; }
 
-  /* ── MODAL NOUVELLE RÉCLAMATION ── */
+  /* MODAL */
   .emp-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 500; display: flex; align-items: center; justify-content: center; }
   .emp-modal { background: #fff; border-radius: 18px; width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.18); }
   .emp-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); position: sticky; top: 0; background: #fff; z-index: 1; }
   .emp-modal-title { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #0F1117; }
   .emp-modal-body { padding: 22px 24px; }
-  .emp-modal-section { font-size: 9.5px; font-weight: 600; color: #B0B7C3; letter-spacing: 0.9px; text-transform: uppercase; margin-bottom: 14px; margin-top: 4px; }
+  .emp-modal-section { font-size: 9.5px; font-weight: 600; color: #B0B7C3; letter-spacing: 0.9px; text-transform: uppercase; margin-bottom: 14px; }
   .emp-field { margin-bottom: 16px; }
   .emp-field label { display: block; font-size: 10.5px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 7px; }
   .emp-field input, .emp-field select, .emp-field textarea { width: 100%; padding: 10px 13px; border: 1.5px solid #E5E7EB; border-radius: 9px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; color: #0F1117; background: #FAFAFA; outline: none; transition: border-color 0.2s; }
   .emp-field input:focus, .emp-field select:focus, .emp-field textarea:focus { border-color: #4F46E5; background: #fff; }
   .emp-field textarea { resize: none; min-height: 90px; line-height: 1.6; }
   .emp-fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .emp-pri-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
+  .emp-pri-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .emp-pri-opt { padding: 8px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif; background: #fff; color: #6B7280; transition: all 0.15s; }
-  .emp-pri-opt:hover { border-color: #C7D2FE; }
   .emp-pri-opt.sel-urgent  { background: #FEE2E2; border-color: #FCA5A5; color: #B91C1C; }
   .emp-pri-opt.sel-haute   { background: #FEF3C7; border-color: #FCD34D; color: #92400E; }
   .emp-pri-opt.sel-normale { background: #EEF2FF; border-color: #A5B4FC; color: #4338CA; }
   .emp-pri-opt.sel-faible  { background: #F3F4F6; border-color: #D1D5DB; color: #6B7280; }
-  .emp-upload-zone { border: 1.5px dashed #D1D5DB; border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .emp-upload-zone { border: 1.5px dashed #D1D5DB; border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; }
   .emp-upload-zone:hover { border-color: #4F46E5; background: #FAFBFF; }
   .emp-upload-txt { font-size: 12.5px; color: #6B7280; margin-top: 6px; }
   .emp-upload-txt span { color: #4F46E5; font-weight: 500; }
   .emp-upload-sub { font-size: 11px; color: #B0B7C3; margin-top: 3px; }
   .emp-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: #fff; }
-  .emp-btn-cancel { padding: 10px 18px; background: #F4F5FA; border: 1px solid #E5E7EB; border-radius: 9px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #374151; transition: background 0.15s; }
+  .emp-btn-cancel { padding: 10px 18px; background: #F4F5FA; border: 1px solid #E5E7EB; border-radius: 9px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #374151; }
   .emp-btn-cancel:hover { background: #E5E7EB; }
-  .emp-btn-submit { padding: 10px 22px; background: #4F46E5; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; color: #fff; transition: background 0.2s; }
+  .emp-btn-submit { padding: 10px 22px; background: #4F46E5; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; color: #fff; }
   .emp-btn-submit:hover { background: #4338CA; }
 
-  /* ── PROFIL PAGE ── */
+  /* PROFIL */
   .emp-profil-card { background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06); padding: 28px; max-width: 520px; }
   .emp-profil-header { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid #F3F4F6; }
-  .emp-profil-av { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .emp-profil-av { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #fff; }
   .emp-profil-name { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #0F1117; }
   .emp-profil-email { font-size: 12.5px; color: #9CA3AF; margin-top: 2px; }
   .emp-profil-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 5px; background: #F3F4F6; color: #6B7280; margin-top: 5px; }
-  .emp-profil-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F9FAFB; }
+  .emp-profil-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F9FAFB; }
   .emp-profil-row:last-child { border-bottom: none; }
   .emp-profil-key { font-size: 12.5px; color: #9CA3AF; }
   .emp-profil-val { font-size: 13px; font-weight: 500; color: #111827; }
 
-  /* ── PARAMS PAGE ── */
+  /* PARAMS */
   .emp-params-card { background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06); padding: 22px 24px; margin-bottom: 16px; max-width: 520px; }
   .emp-params-section-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: #0F1117; margin-bottom: 14px; }
   .emp-param-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #F9FAFB; }
@@ -170,12 +181,12 @@ const CSS = `
   .emp-toggle::after { content: ''; position: absolute; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left 0.2s; }
   .emp-toggle.on::after  { left: 21px; }
   .emp-toggle.off::after { left: 3px; }
-  .emp-btn-save { background: #4F46E5; color: #fff; border: none; border-radius: 9px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; transition: background 0.2s; }
+  .emp-btn-save { background: #4F46E5; color: #fff; border: none; border-radius: 9px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; }
   .emp-btn-save:hover { background: #4338CA; }
 
-  /* ── TOAST ── */
+  /* TOAST */
   .emp-toast { position: fixed; bottom: 28px; right: 28px; background: #1C1C2E; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 999; box-shadow: 0 8px 28px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; animation: empSlideUp 0.3s ease; }
-  @keyframes empSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes empSlideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 `;
 
 // ── DATA ───────────────────────────────────────────────────────────────────
@@ -183,7 +194,7 @@ const TICKETS_INIT = [
   {
     id: "ID-88242", titre: "Problème de facturation récurrent",
     service: "Comptabilité", cat: "Facturation", priorite: "urgent",
-    statut: "attente", date: "12 Oct 2023", creePar: true, assignee: false, prog: 15,
+    statut: "attente", date: "12 Oct 2023", creePar: true, assignee: false, prog: 0,
     description: "La facturation mensuelle génère des doublons depuis 3 mois.",
     timeline: [
       { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong> par vous</>, time: "12 Oct 2023 – 09:14" },
@@ -193,32 +204,30 @@ const TICKETS_INIT = [
   {
     id: "ID-61876", titre: "Défaut de livraison majeur",
     service: "Logistique", cat: "Transporteur A", priorite: "haute",
-    statut: "cours", date: "05 Nov 2023", creePar: false, assignee: true, prog: 60,
+    statut: "cours", date: "05 Nov 2023", creePar: false, assignee: true, prog: 50,
     description: "Plusieurs colis ont été livrés à la mauvaise adresse.",
     timeline: [
       { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong></>, time: "05 Nov 2023 – 08:00" },
-      { icon: "▶️", bg: "#FEF3C7", text: <>Prise en charge par <strong>Karim A.</strong></>, time: "06 Nov 2023 – 10:22" },
-      { icon: "✏️", bg: "#FEF3C7", text: <>Statut mis à jour : <strong>En cours</strong></>, time: "08 Nov 2023 – 14:35" },
+      { icon: "▶️", bg: "#FEF3C7", text: <>Passée en <strong>En cours</strong></>, time: "06 Nov 2023 – 10:22" },
     ],
   },
   {
     id: "ID-68245", titre: "Accès portail client bloqué",
     service: "Support IT", cat: "Authentification", priorite: "normale",
-    statut: "attente", date: "18 Oct 2023", creePar: true, assignee: false, prog: 5,
+    statut: "attente", date: "18 Oct 2023", creePar: true, assignee: false, prog: 0,
     description: "Impossible de se connecter au portail depuis la mise à jour.",
     timeline: [
       { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong> par vous</>, time: "18 Oct 2023 – 11:02" },
-      { icon: "⏳", bg: "#F3F4F6", text: <>En attente de traitement</>, time: "18 Oct 2023 – 11:02" },
     ],
   },
   {
     id: "ID-88312", titre: "Mise à jour coordonnées fournisseur",
     service: "Technique", cat: "Info client", priorite: "normale",
-    statut: "cours", date: "10 Nov 2023", creePar: false, assignee: true, prog: 30,
+    statut: "cours", date: "10 Nov 2023", creePar: false, assignee: true, prog: 50,
     description: "Les coordonnées du fournisseur principal doivent être actualisées.",
     timeline: [
       { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong></>, time: "10 Nov 2023 – 07:45" },
-      { icon: "▶️", bg: "#FEF3C7", text: <>Prise en charge par <strong>Aya S.</strong></>, time: "11 Nov 2023 – 09:10" },
+      { icon: "▶️", bg: "#FEF3C7", text: <>Passée en <strong>En cours</strong></>, time: "11 Nov 2023 – 09:10" },
     ],
   },
   {
@@ -228,14 +237,35 @@ const TICKETS_INIT = [
     description: "Remboursement de la note de frais du déplacement de septembre.",
     timeline: [
       { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong> par vous</>, time: "02 Oct 2023 – 14:20" },
-      { icon: "▶️", bg: "#FEF3C7", text: <>Prise en charge</>, time: "03 Oct 2023 – 09:00" },
-      { icon: "✅", bg: "#D1FAE5", text: <><strong>Résolu</strong> – remboursement effectué</>, time: "05 Oct 2023 – 16:45" },
+      { icon: "▶️", bg: "#FEF3C7", text: <>Passée en <strong>En cours</strong></>, time: "03 Oct 2023 – 09:00" },
+      { icon: "✅", bg: "#D1FAE5", text: <><strong>Terminée</strong> – remboursement effectué</>, time: "05 Oct 2023 – 16:45" },
     ],
   },
 ];
 
-const statutLabel = { attente: "En attente", cours: "En cours", resolu: "Résolu" };
-const progColors   = { attente: "#9CA3AF", cours: "#F59E0B", resolu: "#10B981" };
+// ── COLUMN CONFIG ──────────────────────────────────────────────────────────
+const COLUMNS = [
+  { key: "attente", label: "À faire",  dotColor: "#9CA3AF", countColor: "#6B7280", prog: 0   },
+  { key: "cours",   label: "En cours", dotColor: "#F59E0B", countColor: "#D97706", prog: 50  },
+  { key: "resolu",  label: "Terminé",  dotColor: "#10B981", countColor: "#059669", prog: 100 },
+];
+
+const COL_KEYS     = ["attente", "cours", "resolu"];
+const statutLabel  = { attente: "À faire", cours: "En cours", resolu: "Terminé" };
+const progColors   = { attente: "#9CA3AF", cours: "#F59E0B",  resolu: "#10B981"  };
+
+const TRANSITIONS = {
+  "attente→cours":  { icon: "▶️", bg: "#FEF3C7", text: <><strong>En cours</strong> – prise en charge</> },
+  "cours→resolu":   { icon: "✅", bg: "#D1FAE5", text: <><strong>Terminée</strong></> },
+  "cours→attente":  { icon: "↩️", bg: "#F3F4F6", text: <>Renvoyée en <strong>À faire</strong></> },
+  "resolu→cours":   { icon: "🔄", bg: "#FEF3C7", text: <>Réouverte en <strong>En cours</strong></> },
+};
+
+function nowStr() {
+  const d = new Date();
+  const mois = ["Jan","Fév","Mar","Avr","Mai","Juin","Jul","Août","Sep","Oct","Nov","Déc"];
+  return `${d.getDate().toString().padStart(2,"0")} ${mois[d.getMonth()]} ${d.getFullYear()} – ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+}
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
 const Logo = () => (
@@ -255,83 +285,173 @@ const Toggle = ({ init = true }) => {
   return <button className={`emp-toggle ${on ? "on" : "off"}`} onClick={() => setOn(!on)} />;
 };
 
-const CalIcon = () => (
-  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-    <rect x="1" y="2" width="10" height="9" rx="1.5" stroke="#B0B7C3" strokeWidth="1.2"/>
-    <path d="M4 1v2M8 1v2M1 5h10" stroke="#B0B7C3" strokeWidth="1.2" strokeLinecap="round"/>
-  </svg>
-);
-
 // ── TICKET CARD ────────────────────────────────────────────────────────────
-const TicketCard = ({ ticket, onClick }) => (
-  <div className="emp-card" onClick={() => onClick(ticket)}>
-    <div className="emp-card-top">
-      <span className="emp-card-id">{ticket.id}</span>
-      <span className={`emp-pri-badge ${ticket.priorite}`}>
-        {ticket.priorite.charAt(0).toUpperCase() + ticket.priorite.slice(1)}
-      </span>
-    </div>
-    <div className="emp-card-title">{ticket.titre}</div>
-    <div className="emp-card-tags">
-      <span className="emp-tag">{ticket.service}</span>
-      <span className="emp-tag">{ticket.cat}</span>
-    </div>
-    <div className="emp-prog-wrap">
-      <div className="emp-prog-bg">
-        <div className="emp-prog-fill" style={{ width: `${ticket.prog}%`, background: progColors[ticket.statut] }}/>
-      </div>
-    </div>
-    <div className="emp-card-footer">
-      <span className="emp-card-date"><CalIcon /> {ticket.date}</span>
-      <span className="emp-card-by">{ticket.creePar ? "Créée par moi" : ticket.assignee ? "Assignée à moi" : ""}</span>
-    </div>
-  </div>
-);
+const TicketCard = ({ ticket, colIndex, onMove, onOpen }) => {
+  const [dragging, setDragging] = useState(false);
 
-// ── TICKET DETAIL PANEL ────────────────────────────────────────────────────
-const DetailPanel = ({ ticket, onClose }) => (
-  <div className="emp-detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-    <div className="emp-detail-panel">
-      <div className="emp-detail-head">
-        <span className="emp-detail-id">{ticket.id}</span>
-        <button className="emp-close-btn" onClick={onClose}>✕</button>
-      </div>
-      <div className="emp-detail-title">{ticket.titre}</div>
-      <div className="emp-detail-badges">
+  const prevLabel = colIndex > 0 ? `← ${statutLabel[COL_KEYS[colIndex - 1]]}` : "";
+  const nextLabel = colIndex < 2 ? `${statutLabel[COL_KEYS[colIndex + 1]]} →` : "";
+
+  return (
+    <div
+      className={`emp-card${dragging ? " dragging" : ""}`}
+      draggable
+      onDragStart={(e) => {
+        setDragging(true);
+        e.dataTransfer.setData("ticketId", ticket.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onDragEnd={() => setDragging(false)}
+      onClick={() => onOpen(ticket)}
+    >
+      <div className="emp-card-top">
+        <span className="emp-card-id">{ticket.id}</span>
         <span className={`emp-pri-badge ${ticket.priorite}`}>
           {ticket.priorite.charAt(0).toUpperCase() + ticket.priorite.slice(1)}
         </span>
-        <span className={`emp-status-badge ${ticket.statut}`}>{statutLabel[ticket.statut]}</span>
+      </div>
+      <div className="emp-card-title">{ticket.titre}</div>
+      <div className="emp-card-tags">
+        <span className="emp-tag">{ticket.service}</span>
+        <span className="emp-tag">{ticket.cat}</span>
+      </div>
+      <div className="emp-prog-bg">
+        <div className="emp-prog-fill" style={{ width: `${ticket.prog}%`, background: progColors[ticket.statut] }}/>
+      </div>
+      <div className="emp-card-footer">
+        <span className="emp-card-date">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <rect x="1" y="2" width="10" height="9" rx="1.5" stroke="#B0B7C3" strokeWidth="1.2"/>
+            <path d="M4 1v2M8 1v2M1 5h10" stroke="#B0B7C3" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          {ticket.date}
+        </span>
+        <span className="emp-card-by">
+          {ticket.creePar ? "Créée par moi" : ticket.assignee ? "Assignée à moi" : ""}
+        </span>
       </div>
 
-      <div className="emp-divider"/>
-      {[
-        ["Service",    ticket.service],
-        ["Catégorie",  ticket.cat],
-        ["Date",       ticket.date],
-      ].map(([k, v]) => (
-        <div className="emp-detail-row" key={k}>
-          <span className="emp-detail-key">{k}</span>
-          <span className="emp-detail-val">{v}</span>
-        </div>
-      ))}
-
-      <div className="emp-prog-detail">
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#9CA3AF" }}>
-          <span>Avancement</span><span style={{ fontWeight: 600, color: "#111827" }}>{ticket.prog}%</span>
-        </div>
-        <div className="emp-prog-detail-bar">
-          <div className="emp-prog-detail-fill" style={{ width: `${ticket.prog}%`, background: progColors[ticket.statut] }}/>
-        </div>
+      {/* Boutons de déplacement — stop propagation pour ne pas ouvrir le panneau */}
+      <div className="emp-card-actions" onClick={(e) => e.stopPropagation()}>
+        <button
+          className="emp-move-btn"
+          disabled={colIndex === 0}
+          onClick={() => onMove(ticket.id, COL_KEYS[colIndex - 1])}
+        >
+          {prevLabel}
+        </button>
+        <button
+          className="emp-move-btn fwd"
+          disabled={colIndex === 2}
+          onClick={() => onMove(ticket.id, COL_KEYS[colIndex + 1])}
+        >
+          {nextLabel}
+        </button>
       </div>
+    </div>
+  );
+};
 
-      <div className="emp-divider"/>
-      <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 6 }}>Description</div>
-      <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, marginBottom: 16 }}>{ticket.description}</p>
+// ── KANBAN COLUMN ──────────────────────────────────────────────────────────
+const KanbanColumn = ({ col, colIndex, tickets, onMove, onOpen }) => {
+  const [dragOver, setDragOver] = useState(false);
 
-      <div className="emp-divider"/>
-      <div className="emp-section-title">Historique</div>
-      <div className="emp-timeline">
+  return (
+    <div
+      className={`emp-col${dragOver ? " drag-over" : ""}`}
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const id = e.dataTransfer.getData("ticketId");
+        if (id) onMove(id, col.key);
+      }}
+    >
+      <div className="emp-col-header">
+        <div className="emp-col-title">
+          <div className="emp-col-dot" style={{ background: col.dotColor }}/>
+          {col.label}
+        </div>
+        <span className="emp-col-count" style={{ color: col.countColor }}>{tickets.length}</span>
+      </div>
+      <div className="emp-col-body">
+        {tickets.length === 0
+          ? <div className="emp-drop-hint">Déposez une carte ici</div>
+          : tickets.map((t) => (
+              <TicketCard key={t.id} ticket={t} colIndex={colIndex} onMove={onMove} onOpen={onOpen} />
+            ))
+        }
+      </div>
+    </div>
+  );
+};
+
+// ── DETAIL PANEL ───────────────────────────────────────────────────────────
+const DetailPanel = ({ ticket, onClose, onMove }) => {
+  const colIndex = COL_KEYS.indexOf(ticket.statut);
+
+  return (
+    <div className="emp-detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="emp-detail-panel">
+        <div className="emp-detail-head">
+          <span className="emp-detail-id">{ticket.id}</span>
+          <button className="emp-close-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="emp-detail-title">{ticket.titre}</div>
+        <div className="emp-detail-badges">
+          <span className={`emp-pri-badge ${ticket.priorite}`}>
+            {ticket.priorite.charAt(0).toUpperCase() + ticket.priorite.slice(1)}
+          </span>
+          <span className={`emp-status-badge ${ticket.statut}`}>{statutLabel[ticket.statut]}</span>
+        </div>
+
+        {/* Boutons de déplacement */}
+        <div className="emp-detail-move-row">
+          <button
+            className="emp-detail-move-btn"
+            disabled={colIndex === 0}
+            onClick={() => onMove(ticket.id, COL_KEYS[colIndex - 1])}
+          >
+            ← {colIndex > 0 ? statutLabel[COL_KEYS[colIndex - 1]] : ""}
+          </button>
+          <button
+            className="emp-detail-move-btn fwd"
+            disabled={colIndex === 2}
+            onClick={() => onMove(ticket.id, COL_KEYS[colIndex + 1])}
+          >
+            {colIndex < 2 ? statutLabel[COL_KEYS[colIndex + 1]] : ""} →
+          </button>
+        </div>
+
+        <div className="emp-divider"/>
+        {[
+          ["Service",   ticket.service],
+          ["Catégorie", ticket.cat],
+          ["Date",      ticket.date],
+        ].map(([k, v]) => (
+          <div className="emp-detail-row" key={k}>
+            <span className="emp-detail-key">{k}</span>
+            <span className="emp-detail-val">{v}</span>
+          </div>
+        ))}
+
+        <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#9CA3AF" }}>
+            <span>Avancement</span>
+            <span style={{ fontWeight: 600, color: "#111827" }}>{ticket.prog}%</span>
+          </div>
+          <div className="emp-prog-detail-bar">
+            <div className="emp-prog-detail-fill" style={{ width: `${ticket.prog}%`, background: progColors[ticket.statut] }}/>
+          </div>
+        </div>
+
+        <div className="emp-divider"/>
+        <div className="emp-section-title">Description</div>
+        <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, marginBottom: 16 }}>{ticket.description}</p>
+
+        <div className="emp-divider"/>
+        <div className="emp-section-title">Historique</div>
         {ticket.timeline.map((item, i) => (
           <div className="emp-tl-item" key={i}>
             <div className="emp-tl-icon" style={{ background: item.bg }}>{item.icon}</div>
@@ -343,20 +463,13 @@ const DetailPanel = ({ ticket, onClose }) => (
         ))}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-// ── MODAL NOUVELLE RÉCLAMATION ─────────────────────────────────────────────
+// ── MODAL ──────────────────────────────────────────────────────────────────
 const ModalNouvelleReclamation = ({ onClose, onSubmit }) => {
-  const [form, setForm]     = useState({ titre: "", service: "", cat: "", description: "" });
-  const [priorite, setPri]  = useState("normale");
-
-  const priorities = ["urgent", "haute", "normale", "faible"];
-
-  const handleSubmit = () => {
-    if (!form.titre.trim() || !form.service || !form.description.trim()) return;
-    onSubmit({ ...form, priorite });
-  };
+  const [form, setForm]   = useState({ titre: "", service: "", cat: "", description: "" });
+  const [pri,  setPri]    = useState("normale");
 
   return (
     <div className="emp-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -367,23 +480,18 @@ const ModalNouvelleReclamation = ({ onClose, onSubmit }) => {
         </div>
         <div className="emp-modal-body">
           <div className="emp-modal-section">Informations générales</div>
-
           <div className="emp-field">
-            <label>Titre de la réclamation *</label>
-            <input
-              placeholder="Ex : Problème de facturation client X"
-              value={form.titre}
-              onChange={(e) => setForm({ ...form, titre: e.target.value })}
-            />
+            <label>Titre *</label>
+            <input placeholder="Ex : Problème de facturation client X"
+              value={form.titre} onChange={(e) => setForm({ ...form, titre: e.target.value })}/>
           </div>
-
           <div className="emp-fields-row">
             <div className="emp-field">
-              <label>Service concerné *</label>
+              <label>Service *</label>
               <select value={form.service} onChange={(e) => setForm({ ...form, service: e.target.value })}>
                 <option value="">Sélectionner...</option>
                 {["Comptabilité","Logistique","Support IT","Technique","RH","Finance","Maintenance"].map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s}>{s}</option>
                 ))}
               </select>
             </div>
@@ -392,162 +500,141 @@ const ModalNouvelleReclamation = ({ onClose, onSubmit }) => {
               <select value={form.cat} onChange={(e) => setForm({ ...form, cat: e.target.value })}>
                 <option value="">Sélectionner...</option>
                 {["Facturation","Authentification","Transporteur A","Info client","Finance","Autre"].map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c}>{c}</option>
                 ))}
               </select>
             </div>
           </div>
-
           <div className="emp-field">
             <label>Description *</label>
-            <textarea
-              placeholder="Décrivez le problème en détail..."
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
+            <textarea placeholder="Décrivez le problème en détail..."
+              value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}/>
           </div>
-
           <div className="emp-modal-section">Priorité</div>
-          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 10 }}>Niveau de priorité *</div>
           <div className="emp-pri-group">
-            {priorities.map((p) => (
-              <button
-                key={p}
-                className={`emp-pri-opt${priorite === p ? ` sel-${p}` : ""}`}
-                onClick={() => setPri(p)}
-              >
+            {["urgent","haute","normale","faible"].map((p) => (
+              <button key={p} className={`emp-pri-opt${pri === p ? ` sel-${p}` : ""}`} onClick={() => setPri(p)}>
                 {p.charAt(0).toUpperCase() + p.slice(1)}
               </button>
             ))}
           </div>
-
           <div className="emp-modal-section" style={{ marginTop: 20 }}>Pièces jointes</div>
           <div className="emp-upload-zone">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ margin: "0 auto 6px", display: "block" }}>
               <path d="M12 16V8M12 8l-3 3M12 8l3 3" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M3 16v1a4 4 0 004 4h10a4 4 0 004-4v-1" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            <div className="emp-upload-txt">
-              Glissez vos fichiers ici ou <span>parcourez</span>
-            </div>
+            <div className="emp-upload-txt">Glissez vos fichiers ici ou <span>parcourez</span></div>
             <div className="emp-upload-sub">PNG, JPG, PDF jusqu'à 10 Mo</div>
           </div>
         </div>
         <div className="emp-modal-footer">
           <button className="emp-btn-cancel" onClick={onClose}>Annuler</button>
-          <button className="emp-btn-submit" onClick={handleSubmit}>Soumettre la réclamation</button>
+          <button className="emp-btn-submit" onClick={() => {
+            if (!form.titre.trim() || !form.service || !form.description.trim()) return;
+            onSubmit({ ...form, priorite: pri });
+          }}>
+            Soumettre la réclamation
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-// ── PAGE : MES RÉCLAMATIONS (KANBAN) ──────────────────────────────────────
+// ── PAGE KANBAN ────────────────────────────────────────────────────────────
 const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
   const [activeFilter, setActiveFilter] = useState("toutes");
-  const [searchQ,      setSearchQ]      = useState("");
   const [selected,     setSelected]     = useState(null);
-  const [showModal,    setShowModal]    = useState(false);
 
   const filterFn = (t) => {
-    if (activeFilter === "creees")   return t.creePar;
+    if (activeFilter === "creees")    return t.creePar;
     if (activeFilter === "assignees") return t.assignee;
-    if (activeFilter === "urgentes") return t.priorite === "urgent";
+    if (activeFilter === "urgentes")  return t.priorite === "urgent";
     return true;
   };
 
-  const searchFn = (t) =>
-    searchQ === "" ||
-    (t.titre + t.id + t.service).toLowerCase().includes(searchQ.toLowerCase());
+  const getCol = (statut) => tickets.filter((t) => t.statut === statut && filterFn(t));
 
-  const getCol = (statut) => tickets.filter((t) => t.statut === statut && filterFn(t) && searchFn(t));
-
-  const columns = [
-    { key: "attente", label: "En attente", dotColor: "#9CA3AF", countColor: "#6B7280" },
-    { key: "cours",   label: "En cours",   dotColor: "#F59E0B", countColor: "#D97706" },
-    { key: "resolu",  label: "Résolues",   dotColor: "#10B981", countColor: "#059669" },
-  ];
-
-  const handleSubmit = ({ titre, service, cat, description, priorite }) => {
-    const now = new Date();
-    const mois = ["Jan","Fév","Mar","Avr","Mai","Juin","Jul","Août","Sep","Oct","Nov","Déc"];
-    const date = `${now.getDate().toString().padStart(2,"0")} ${mois[now.getMonth()]} ${now.getFullYear()}`;
-    const heure = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
-    const newTicket = {
-      id: "ID-" + Math.floor(10000 + Math.random() * 90000),
-      titre, service, cat: cat || "Autre", description, priorite,
-      statut: "attente", date, creePar: true, assignee: false, prog: 0,
-      timeline: [
-        { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong> par vous</>, time: `${date} – ${heure}` },
-      ],
-    };
-    setTickets((prev) => [newTicket, ...prev]);
-    setShowModal(false);
-    showToast("✅ Réclamation soumise avec succès !");
+  const moveTicket = (id, toStatut) => {
+    setTickets((prev) =>
+      prev.map((t) => {
+        if (t.id !== id || t.statut === toStatut) return t;
+        const key = `${t.statut}→${toStatut}`;
+        const tr  = TRANSITIONS[key] || { icon: "✏️", bg: "#F3F4F6", text: <>Statut mis à jour</> };
+        const col = COLUMNS.find((c) => c.key === toStatut);
+        return {
+          ...t,
+          statut: toStatut,
+          prog:   col.prog,
+          timeline: [...t.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }],
+        };
+      })
+    );
+    // Refresh detail panel if open
+    setSelected((prev) => {
+      if (!prev || prev.id !== id) return prev;
+      const col = COLUMNS.find((c) => c.key === toStatut);
+      const key = `${prev.statut}→${toStatut}`;
+      const tr  = TRANSITIONS[key] || { icon: "✏️", bg: "#F3F4F6", text: <>Statut mis à jour</> };
+      return {
+        ...prev,
+        statut: toStatut,
+        prog:   col.prog,
+        timeline: [...prev.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }],
+      };
+    });
+    showToast(`✅ Déplacé vers « ${statutLabel[toStatut]} »`);
   };
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <div className="emp-filters">
-          <span className="emp-filter-label">Filtrer :</span>
-          {[
-            { key: "toutes",    label: "Toutes"        },
-            { key: "creees",    label: "Créées par moi" },
-            { key: "assignees", label: "Assignées à moi"},
-            { key: "urgentes",  label: "Urgentes"      },
-          ].map((f) => (
-            <button
-              key={f.key}
-              className={`emp-filter-btn${activeFilter === f.key ? " active" : ""}`}
-              onClick={() => setActiveFilter(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+      <div className="emp-filters">
+        <span className="emp-filter-label">Filtrer :</span>
+        {[
+          { key: "toutes",    label: "Toutes"          },
+          { key: "creees",    label: "Créées par moi"   },
+          { key: "assignees", label: "Assignées à moi"  },
+          { key: "urgentes",  label: "Urgentes"         },
+        ].map((f) => (
+          <button
+            key={f.key}
+            className={`emp-filter-btn${activeFilter === f.key ? " active" : ""}`}
+            onClick={() => setActiveFilter(f.key)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ fontSize: 11.5, color: "#B0B7C3", marginBottom: 16, display: "flex", alignItems: "center", gap: 5 }}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 6h8M7 3l3 3-3 3" stroke="#B0B7C3" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Glissez-déposez les cartes entre les colonnes, ou utilisez les boutons ← →
       </div>
 
       <div className="emp-kanban">
-        {columns.map((col) => {
-          const items = getCol(col.key);
-          return (
-            <div className="emp-col" key={col.key}>
-              <div className="emp-col-header">
-                <div className="emp-col-title">
-                  <div className="emp-col-dot" style={{ background: col.dotColor }}/>
-                  {col.label}
-                </div>
-                <span className="emp-col-count" style={{ color: col.countColor }}>{items.length}</span>
-              </div>
-              <div className="emp-col-body">
-                {items.length === 0
-                  ? <div className="emp-empty-col">Aucune réclamation</div>
-                  : items.map((t) => (
-                      <TicketCard key={t.id} ticket={t} onClick={setSelected} />
-                    ))
-                }
-              </div>
-            </div>
-          );
-        })}
+        {COLUMNS.map((col, i) => (
+          <KanbanColumn
+            key={col.key}
+            col={col}
+            colIndex={i}
+            tickets={getCol(col.key)}
+            onMove={moveTicket}
+            onOpen={setSelected}
+          />
+        ))}
       </div>
 
       {selected && (
-        <DetailPanel ticket={selected} onClose={() => setSelected(null)} />
-      )}
-
-      {showModal && (
-        <ModalNouvelleReclamation
-          onClose={() => setShowModal(false)}
-          onSubmit={handleSubmit}
-        />
+        <DetailPanel ticket={selected} onClose={() => setSelected(null)} onMove={moveTicket} />
       )}
     </>
   );
 };
 
-// ── PAGE : MON PROFIL ─────────────────────────────────────────────────────
+// ── PAGES PROFIL / PARAMS ──────────────────────────────────────────────────
 const MonProfilPage = () => (
   <div className="emp-profil-card">
     <div className="emp-profil-header">
@@ -559,11 +646,8 @@ const MonProfilPage = () => (
       </div>
     </div>
     {[
-      ["Département", "Support Client"],
-      ["Poste",       "Agent Support Senior"],
-      ["Téléphone",   "+212 6 00 00 00 00"],
-      ["Date d'entrée", "01 Jan 2021"],
-      ["Manager",     "Karim Alami"],
+      ["Département","Support Client"],["Poste","Agent Support Senior"],
+      ["Téléphone","+212 6 00 00 00 00"],["Date d'entrée","01 Jan 2021"],["Manager","Karim Alami"],
     ].map(([k, v]) => (
       <div className="emp-profil-row" key={k}>
         <span className="emp-profil-key">{k}</span>
@@ -573,25 +657,18 @@ const MonProfilPage = () => (
   </div>
 );
 
-// ── PAGE : PARAMÈTRES ─────────────────────────────────────────────────────
 const ParametresPage = () => (
   <div>
     {[
-      {
-        title: "Notifications",
-        items: [
-          { label: "Alertes email",        sub: "Recevoir les alertes de mes réclamations", init: true  },
-          { label: "Notifications push",   sub: "Activées dans le navigateur",              init: false },
-          { label: "Résumé hebdomadaire",  sub: "Reçu chaque lundi matin",                  init: true  },
-        ],
-      },
-      {
-        title: "Sécurité",
-        items: [
-          { label: "Authentification 2FA",     sub: "Sécuriser l'accès par double authentification", init: true  },
-          { label: "Session auto-déconnexion", sub: "Après 30 min d'inactivité",                      init: false },
-        ],
-      },
+      { title: "Notifications", items: [
+        { label: "Alertes email",       sub: "Recevoir les alertes de mes réclamations", init: true  },
+        { label: "Notifications push",  sub: "Activées dans le navigateur",              init: false },
+        { label: "Résumé hebdomadaire", sub: "Reçu chaque lundi matin",                  init: true  },
+      ]},
+      { title: "Sécurité", items: [
+        { label: "Authentification 2FA",     sub: "Double authentification activée",    init: true  },
+        { label: "Session auto-déconnexion", sub: "Après 30 min d'inactivité",          init: false },
+      ]},
     ].map((section) => (
       <div className="emp-params-card" key={section.title}>
         <div className="emp-params-section-title">{section.title}</div>
@@ -610,100 +687,55 @@ const ParametresPage = () => (
   </div>
 );
 
-// ── NAV ITEMS ─────────────────────────────────────────────────────────────
-const navItems = [
-  {
-    key: "mes", label: "Mes réclamations", section: "PRINCIPAL",
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/>
-        <rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/>
-        <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/>
-        <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/>
-      </svg>
-    ),
-    showBadge: true,
-  },
-  {
-    key: "nouvelle", label: "Nouvelle réclamation", section: null,
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    key: "profil", label: "Mon profil", section: "AUTRE",
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/>
-        <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    key: "params", label: "Paramètres", section: null,
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
-        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"
-          stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-];
-
-const pageTitles = {
-  mes:      "Mes réclamations",
-  profil:   "Mon profil",
-  params:   "Paramètres",
-};
-
-// ── MAIN COMPONENT ─────────────────────────────────────────────────────────
+// ── MAIN ───────────────────────────────────────────────────────────────────
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
 
   const [activePage, setActivePage] = useState("mes");
   const [tickets,    setTickets]    = useState(TICKETS_INIT);
   const [showModal,  setShowModal]  = useState(false);
-  const [selected,   setSelected]   = useState(null);
-  const [searchQ,    setSearchQ]    = useState("");
-  const [searchFocus,setSearchFocus]= useState(false);
   const [toast,      setToast]      = useState(null);
   const toastTimer = useRef(null);
 
   const showToast = (msg) => {
     setToast(msg);
     clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2800);
+    toastTimer.current = setTimeout(() => setToast(null), 2600);
   };
 
-  const handleNavClick = (key) => {
-    if (key === "nouvelle") {
-      setShowModal(true);
-    } else {
-      setActivePage(key);
-    }
-  };
-
-  const handleNewSubmit = ({ titre, service, cat, description, priorite }) => {
-    const now = new Date();
+  const handleSubmit = ({ titre, service, cat, description, priorite }) => {
+    const d = new Date();
     const mois = ["Jan","Fév","Mar","Avr","Mai","Juin","Jul","Août","Sep","Oct","Nov","Déc"];
-    const date = `${now.getDate().toString().padStart(2,"0")} ${mois[now.getMonth()]} ${now.getFullYear()}`;
-    const heure = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
-    const newTicket = {
+    const date = `${d.getDate().toString().padStart(2,"0")} ${mois[d.getMonth()]} ${d.getFullYear()}`;
+    const heure = `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+    setTickets((prev) => [{
       id: "ID-" + Math.floor(10000 + Math.random() * 90000),
       titre, service, cat: cat || "Autre", description, priorite,
       statut: "attente", date, creePar: true, assignee: false, prog: 0,
-      timeline: [
-        { icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong> par vous</>, time: `${date} – ${heure}` },
-      ],
-    };
-    setTickets((prev) => [newTicket, ...prev]);
+      timeline: [{ icon: "🔵", bg: "#EEF2FF", text: <><strong>Réclamation créée</strong> par vous</>, time: `${date} – ${heure}` }],
+    }, ...prev]);
     setShowModal(false);
     setActivePage("mes");
     showToast("✅ Réclamation soumise avec succès !");
   };
+
+  const handleNav = (key) => {
+    if (key === "nouvelle") { setShowModal(true); return; }
+    setActivePage(key);
+  };
+
+  const pageTitles = { mes: "Mes réclamations", profil: "Mon profil", params: "Paramètres" };
+
+  const navItems = [
+    { key: "mes",      label: "Mes réclamations",    section: "PRINCIPAL", badge: true,
+      icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/></svg> },
+    { key: "nouvelle", label: "Nouvelle réclamation", section: null,
+      icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
+    { key: "profil",   label: "Mon profil",           section: "AUTRE",
+      icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
+    { key: "params",   label: "Paramètres",           section: null,
+      icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg> },
+  ];
 
   const renderPage = () => {
     switch (activePage) {
@@ -719,24 +751,20 @@ export default function EmployeeDashboard() {
       <style>{CSS}</style>
       <div className="emp-layout">
 
-        {/* ── SIDEBAR ── */}
+        {/* SIDEBAR */}
         <aside className="emp-sidebar">
           <Logo />
           <nav className="emp-sidebar-nav">
             {navItems.map((item) => (
               <div key={item.key}>
-                {item.section && (
-                  <div className="emp-nav-section">{item.section}</div>
-                )}
+                {item.section && <div className="emp-nav-section">{item.section}</div>}
                 <button
                   className={`emp-nav-item${activePage === item.key ? " active" : ""}`}
-                  onClick={() => handleNavClick(item.key)}
+                  onClick={() => handleNav(item.key)}
                 >
                   {item.icon}
                   {item.label}
-                  {item.showBadge && (
-                    <span className="emp-nav-badge">{tickets.length}</span>
-                  )}
+                  {item.badge && <span className="emp-nav-badge">{tickets.length}</span>}
                 </button>
               </div>
             ))}
@@ -750,37 +778,24 @@ export default function EmployeeDashboard() {
           </div>
         </aside>
 
-        {/* ── MAIN ── */}
+        {/* MAIN */}
         <div className="emp-main">
           <header className="emp-topbar">
             <div className="emp-topbar-title">{pageTitles[activePage] || "Mes réclamations"}</div>
-
-            <div className="emp-search-wrap">
-              <div className={`emp-search-bar${searchFocus ? " focused" : ""}`}>
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                  <circle cx="6" cy="6" r="4.5" stroke="#9CA3AF" strokeWidth="1.4"/>
-                  <path d="M9.5 9.5L12 12" stroke="#9CA3AF" strokeWidth="1.4" strokeLinecap="round"/>
-                </svg>
-                <input
-                  placeholder="Rechercher une réclamation..."
-                  value={searchQ}
-                  onChange={(e) => setSearchQ(e.target.value)}
-                  onFocus={() => setSearchFocus(true)}
-                  onBlur={() => setTimeout(() => setSearchFocus(false), 150)}
-                />
-                {searchQ && (
-                  <span style={{ cursor: "pointer", color: "#9CA3AF", fontSize: 14 }} onClick={() => setSearchQ("")}>✕</span>
-                )}
-              </div>
+            <div className="emp-search-bar">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <circle cx="6" cy="6" r="4.5" stroke="#9CA3AF" strokeWidth="1.4"/>
+                <path d="M9.5 9.5L12 12" stroke="#9CA3AF" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+              <input placeholder="Rechercher une réclamation..."/>
             </div>
-
             <div className="emp-topbar-right">
               <button className="emp-icon-btn">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M8 1.5a5 5 0 015 5v2.5l1 2H1l1-2V6.5a5 5 0 015-5z" stroke="#6B7280" strokeWidth="1.4"/>
                   <path d="M6.5 13.5a1.5 1.5 0 003 0" stroke="#6B7280" strokeWidth="1.4"/>
                 </svg>
-                <span className="emp-notif-count">2</span>
+                <span className="emp-notif-dot">2</span>
               </button>
               <button className="emp-btn-new" onClick={() => setShowModal(true)}>
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -796,20 +811,14 @@ export default function EmployeeDashboard() {
               </button>
             </div>
           </header>
-
           <div className="emp-page-body">{renderPage()}</div>
         </div>
       </div>
 
-      {/* ── MODAL ── */}
       {showModal && (
-        <ModalNouvelleReclamation
-          onClose={() => setShowModal(false)}
-          onSubmit={handleNewSubmit}
-        />
+        <ModalNouvelleReclamation onClose={() => setShowModal(false)} onSubmit={handleSubmit} />
       )}
 
-      {/* ── TOAST ── */}
       {toast && <div className="emp-toast">{toast}</div>}
     </>
   );
