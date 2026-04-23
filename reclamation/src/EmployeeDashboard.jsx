@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import MessagerieePage, { MSG_CSS } from "./MessagerieePage";
 
 // ── CSS ────────────────────────────────────────────────────────────────────
 const CSS = `
@@ -724,13 +725,15 @@ export default function EmployeeDashboard() {
     setActivePage(key);
   };
 
-  const pageTitles = { mes: "Mes réclamations", profil: "Mon profil", params: "Paramètres" };
+  const pageTitles = { mes: "Mes réclamations", messagerie: "Messagerie", profil: "Mon profil", params: "Paramètres" };
 
   const navItems = [
     { key: "mes",      label: "Mes réclamations",    section: "PRINCIPAL", badge: true,
       icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/></svg> },
     { key: "nouvelle", label: "Nouvelle réclamation", section: null,
       icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
+    { key: "messagerie", label: "Messagerie", section: null, msgBadge: true,
+      icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg> },
     { key: "profil",   label: "Mon profil",           section: "AUTRE",
       icon: <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
     { key: "params",   label: "Paramètres",           section: null,
@@ -739,16 +742,17 @@ export default function EmployeeDashboard() {
 
   const renderPage = () => {
     switch (activePage) {
-      case "mes":    return <MesReclamationsPage tickets={tickets} setTickets={setTickets} showToast={showToast} />;
-      case "profil": return <MonProfilPage />;
-      case "params": return <ParametresPage />;
-      default:       return <MesReclamationsPage tickets={tickets} setTickets={setTickets} showToast={showToast} />;
+      case "mes":         return <MesReclamationsPage tickets={tickets} setTickets={setTickets} showToast={showToast} />;
+      case "messagerie":  return <MessagerieePage />;
+      case "profil":      return <MonProfilPage />;
+      case "params":      return <ParametresPage />;
+      default:            return <MesReclamationsPage tickets={tickets} setTickets={setTickets} showToast={showToast} />;
     }
   };
 
   return (
     <>
-      <style>{CSS}</style>
+      <style>{CSS + MSG_CSS}</style>
       <div className="emp-layout">
 
         {/* SIDEBAR */}
@@ -765,6 +769,7 @@ export default function EmployeeDashboard() {
                   {item.icon}
                   {item.label}
                   {item.badge && <span className="emp-nav-badge">{tickets.length}</span>}
+                  {item.msgBadge && <span className="emp-nav-badge" style={{ background: "#EF4444" }}>3</span>}
                 </button>
               </div>
             ))}
@@ -811,7 +816,7 @@ export default function EmployeeDashboard() {
               </button>
             </div>
           </header>
-          <div className="emp-page-body">{renderPage()}</div>
+          <div className={activePage === "messagerie" ? "" : "emp-page-body"}>{renderPage()}</div>
         </div>
       </div>
 
