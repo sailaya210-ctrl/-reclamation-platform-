@@ -6,6 +6,7 @@ import Login from "./Login";
 import Dashboard from "./Dashboard";
 import EmployeeDashboard from "./EmployeeDashboard";
 import Responsable from "./Responsable";
+import IntervenantDashboard from "./IntervenantDashboard";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/dashboard"       element={<Dashboard />} />
         <Route path="/employee"        element={<EmployeeDashboard />} />
        <Route path="/responsable" element={<Responsable />} />
+       <Route path="/intervenant" element={<IntervenantDashboard />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MessagerieePage, { MSG_CSS } from "./MessagerieePage";
 
@@ -119,6 +119,37 @@ const CSS = `
   .emp-detail-move-btn.fwd:hover:not(:disabled) { background: #D1FAE5; border-color: #6EE7B7; color: #059669; }
   .emp-detail-move-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
+  /* DETAIL ACTION BUTTONS (edit / delete) */
+  .emp-detail-action-row { display: flex; gap: 8px; margin-top: 10px; }
+  .emp-detail-edit-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; border-radius: 9px; border: 1.5px solid #E5E7EB; background: #F9FAFB; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #374151; transition: all 0.2s; }
+  .emp-detail-edit-btn:hover { background: #EEF2FF; border-color: #A5B4FC; color: #4F46E5; }
+  .emp-detail-delete-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; border-radius: 9px; border: 1.5px solid #FEE2E2; background: #FFF5F5; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #EF4444; transition: all 0.2s; }
+  .emp-detail-delete-btn:hover { background: #FEE2E2; border-color: #FCA5A5; }
+
+  /* CARD MENU (⋮ button) */
+  .emp-card-menu-wrap { position: relative; }
+  .emp-card-menu-btn { width: 24px; height: 24px; border-radius: 6px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #B0B7C3; font-size: 14px; font-weight: 700; letter-spacing: 1px; transition: all 0.15s; flex-shrink: 0; }
+  .emp-card-menu-btn:hover { background: #F4F5FA; color: #6B7280; }
+  .emp-card-dropdown { position: absolute; top: 28px; right: 0; background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.10); z-index: 50; min-width: 148px; overflow: hidden; animation: empSlideUp 0.15s ease; }
+  .emp-card-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 9px 13px; font-size: 12.5px; cursor: pointer; color: #374151; font-family: 'DM Sans', sans-serif; transition: background 0.12s; border: none; background: none; width: 100%; text-align: left; }
+  .emp-card-dropdown-item:hover { background: #F4F5FA; }
+  .emp-card-dropdown-item.danger { color: #EF4444; }
+  .emp-card-dropdown-item.danger:hover { background: #FFF5F5; }
+  .emp-card-dropdown-sep { height: 1px; background: #F3F4F6; margin: 3px 0; }
+
+  /* DELETE CONFIRM MODAL */
+  .emp-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 600; display: flex; align-items: center; justify-content: center; }
+  .emp-confirm-box { background: #fff; border-radius: 16px; padding: 28px 26px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.16); text-align: center; }
+  .emp-confirm-icon { width: 48px; height: 48px; border-radius: 12px; background: #FFF5F5; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+  .emp-confirm-title { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #0F1117; margin-bottom: 8px; }
+  .emp-confirm-text { font-size: 12.5px; color: #9CA3AF; line-height: 1.6; margin-bottom: 22px; }
+  .emp-confirm-id { font-family: monospace; font-size: 11px; background: #F4F5FA; color: #6B7280; padding: 2px 7px; border-radius: 4px; }
+  .emp-confirm-btns { display: flex; gap: 10px; }
+  .emp-confirm-cancel { flex: 1; padding: 11px; background: #F4F5FA; border: 1px solid #E5E7EB; border-radius: 9px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: #374151; font-weight: 500; transition: background 0.15s; }
+  .emp-confirm-cancel:hover { background: #E5E7EB; }
+  .emp-confirm-delete { flex: 1; padding: 11px; background: #EF4444; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; color: #fff; transition: background 0.2s; }
+  .emp-confirm-delete:hover { background: #DC2626; }
+
   /* TIMELINE */
   .emp-tl-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F9FAFB; }
   .emp-tl-item:last-child { border-bottom: none; }
@@ -188,6 +219,35 @@ const CSS = `
   /* TOAST */
   .emp-toast { position: fixed; bottom: 28px; right: 28px; background: #1C1C2E; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 999; box-shadow: 0 8px 28px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; animation: empSlideUp 0.3s ease; }
   @keyframes empSlideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+  /* NOTIFICATION PANEL */
+  .emp-notif-overlay { position: fixed; inset: 0; z-index: 300; }
+  .emp-notif-panel { position: absolute; top: 52px; right: 72px; width: 340px; background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 12px 40px rgba(0,0,0,0.14); overflow: hidden; animation: notifSlide 0.18s ease; }
+  @keyframes notifSlide { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .emp-notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; border-bottom: 1px solid #F3F4F6; }
+  .emp-notif-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: #0F1117; }
+  .emp-notif-mark-all { font-size: 11.5px; color: #4F46E5; font-weight: 500; background: none; border: none; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif; }
+  .emp-notif-mark-all:hover { text-decoration: underline; }
+  .emp-notif-list { max-height: 360px; overflow-y: auto; }
+  .emp-notif-list::-webkit-scrollbar { width: 3px; }
+  .emp-notif-list::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 99px; }
+  .emp-notif-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #F9FAFB; cursor: pointer; transition: background 0.12s; position: relative; }
+  .emp-notif-item:last-child { border-bottom: none; }
+  .emp-notif-item:hover { background: #F9FAFB; }
+  .emp-notif-item.unread { background: #FAFBFF; }
+  .emp-notif-item.unread::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #4F46E5; border-radius: 0 2px 2px 0; }
+  .emp-notif-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .emp-notif-content { flex: 1; min-width: 0; }
+  .emp-notif-text { font-size: 12.5px; color: #374151; line-height: 1.45; }
+  .emp-notif-text strong { color: #0F1117; font-weight: 600; }
+  .emp-notif-time { font-size: 10.5px; color: #B0B7C3; margin-top: 3px; }
+  .emp-notif-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #4F46E5; flex-shrink: 0; margin-top: 5px; }
+  .emp-notif-empty { padding: 32px 16px; text-align: center; }
+  .emp-notif-empty-icon { font-size: 28px; margin-bottom: 8px; }
+  .emp-notif-empty-text { font-size: 13px; color: #9CA3AF; }
+  .emp-notif-footer { padding: 10px 16px; border-top: 1px solid #F3F4F6; text-align: center; }
+  .emp-notif-footer-btn { font-size: 12px; color: #4F46E5; font-weight: 500; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .emp-notif-footer-btn:hover { text-decoration: underline; }
 `;
 
 // ── DATA ───────────────────────────────────────────────────────────────────
@@ -287,8 +347,18 @@ const Toggle = ({ init = true }) => {
 };
 
 // ── TICKET CARD ────────────────────────────────────────────────────────────
-const TicketCard = ({ ticket, colIndex, onMove, onOpen }) => {
-  const [dragging, setDragging] = useState(false);
+const TicketCard = ({ ticket, colIndex, onMove, onOpen, onEdit, onDelete }) => {
+  const [dragging,  setDragging]  = useState(false);
+  const [menuOpen,  setMenuOpen]  = useState(false);
+  const menuRef = useRef(null);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const prevLabel = colIndex > 0 ? `← ${statutLabel[COL_KEYS[colIndex - 1]]}` : "";
   const nextLabel = colIndex < 2 ? `${statutLabel[COL_KEYS[colIndex + 1]]} →` : "";
@@ -303,13 +373,36 @@ const TicketCard = ({ ticket, colIndex, onMove, onOpen }) => {
         e.dataTransfer.effectAllowed = "move";
       }}
       onDragEnd={() => setDragging(false)}
-      onClick={() => onOpen(ticket)}
+      onClick={() => !menuOpen && onOpen(ticket)}
     >
       <div className="emp-card-top">
         <span className="emp-card-id">{ticket.id}</span>
-        <span className={`emp-pri-badge ${ticket.priorite}`}>
-          {ticket.priorite.charAt(0).toUpperCase() + ticket.priorite.slice(1)}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span className={`emp-pri-badge ${ticket.priorite}`}>
+            {ticket.priorite.charAt(0).toUpperCase() + ticket.priorite.slice(1)}
+          </span>
+          {/* ⋮ Menu */}
+          <div className="emp-card-menu-wrap" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+            <button className="emp-card-menu-btn" onClick={() => setMenuOpen((v) => !v)}>⋮</button>
+            {menuOpen && (
+              <div className="emp-card-dropdown">
+                <button className="emp-card-dropdown-item" onClick={() => { setMenuOpen(false); onEdit(ticket); }}>
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+                  </svg>
+                  Modifier
+                </button>
+                <div className="emp-card-dropdown-sep"/>
+                <button className="emp-card-dropdown-item danger" onClick={() => { setMenuOpen(false); onDelete(ticket); }}>
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v4M8.5 6v4M3 3.5l.7 8a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Supprimer
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       <div className="emp-card-title">{ticket.titre}</div>
       <div className="emp-card-tags">
@@ -332,20 +425,12 @@ const TicketCard = ({ ticket, colIndex, onMove, onOpen }) => {
         </span>
       </div>
 
-      {/* Boutons de déplacement — stop propagation pour ne pas ouvrir le panneau */}
+      {/* Boutons de déplacement */}
       <div className="emp-card-actions" onClick={(e) => e.stopPropagation()}>
-        <button
-          className="emp-move-btn"
-          disabled={colIndex === 0}
-          onClick={() => onMove(ticket.id, COL_KEYS[colIndex - 1])}
-        >
+        <button className="emp-move-btn" disabled={colIndex === 0} onClick={() => onMove(ticket.id, COL_KEYS[colIndex - 1])}>
           {prevLabel}
         </button>
-        <button
-          className="emp-move-btn fwd"
-          disabled={colIndex === 2}
-          onClick={() => onMove(ticket.id, COL_KEYS[colIndex + 1])}
-        >
+        <button className="emp-move-btn fwd" disabled={colIndex === 2} onClick={() => onMove(ticket.id, COL_KEYS[colIndex + 1])}>
           {nextLabel}
         </button>
       </div>
@@ -354,7 +439,7 @@ const TicketCard = ({ ticket, colIndex, onMove, onOpen }) => {
 };
 
 // ── KANBAN COLUMN ──────────────────────────────────────────────────────────
-const KanbanColumn = ({ col, colIndex, tickets, onMove, onOpen }) => {
+const KanbanColumn = ({ col, colIndex, tickets, onMove, onOpen, onEdit, onDelete }) => {
   const [dragOver, setDragOver] = useState(false);
 
   return (
@@ -380,7 +465,7 @@ const KanbanColumn = ({ col, colIndex, tickets, onMove, onOpen }) => {
         {tickets.length === 0
           ? <div className="emp-drop-hint">Déposez une carte ici</div>
           : tickets.map((t) => (
-              <TicketCard key={t.id} ticket={t} colIndex={colIndex} onMove={onMove} onOpen={onOpen} />
+              <TicketCard key={t.id} ticket={t} colIndex={colIndex} onMove={onMove} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
             ))
         }
       </div>
@@ -389,7 +474,7 @@ const KanbanColumn = ({ col, colIndex, tickets, onMove, onOpen }) => {
 };
 
 // ── DETAIL PANEL ───────────────────────────────────────────────────────────
-const DetailPanel = ({ ticket, onClose, onMove }) => {
+const DetailPanel = ({ ticket, onClose, onMove, onEdit, onDelete }) => {
   const colIndex = COL_KEYS.indexOf(ticket.statut);
 
   return (
@@ -407,21 +492,29 @@ const DetailPanel = ({ ticket, onClose, onMove }) => {
           <span className={`emp-status-badge ${ticket.statut}`}>{statutLabel[ticket.statut]}</span>
         </div>
 
-        {/* Boutons de déplacement */}
+        {/* Déplacer */}
         <div className="emp-detail-move-row">
-          <button
-            className="emp-detail-move-btn"
-            disabled={colIndex === 0}
-            onClick={() => onMove(ticket.id, COL_KEYS[colIndex - 1])}
-          >
+          <button className="emp-detail-move-btn" disabled={colIndex === 0} onClick={() => onMove(ticket.id, COL_KEYS[colIndex - 1])}>
             ← {colIndex > 0 ? statutLabel[COL_KEYS[colIndex - 1]] : ""}
           </button>
-          <button
-            className="emp-detail-move-btn fwd"
-            disabled={colIndex === 2}
-            onClick={() => onMove(ticket.id, COL_KEYS[colIndex + 1])}
-          >
+          <button className="emp-detail-move-btn fwd" disabled={colIndex === 2} onClick={() => onMove(ticket.id, COL_KEYS[colIndex + 1])}>
             {colIndex < 2 ? statutLabel[COL_KEYS[colIndex + 1]] : ""} →
+          </button>
+        </div>
+
+        {/* Modifier / Supprimer */}
+        <div className="emp-detail-action-row">
+          <button className="emp-detail-edit-btn" onClick={() => { onClose(); onEdit(ticket); }}>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+            </svg>
+            Modifier
+          </button>
+          <button className="emp-detail-delete-btn" onClick={() => { onClose(); onDelete(ticket); }}>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v4M8.5 6v4M3 3.5l.7 8a1 1 0 001 .9h4.6a1 1 0 001-.9l.7-8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Supprimer
           </button>
         </div>
 
@@ -543,10 +636,108 @@ const ModalNouvelleReclamation = ({ onClose, onSubmit }) => {
   );
 };
 
+// ── MODAL MODIFIER ─────────────────────────────────────────────────────────
+const ModalModifier = ({ ticket, onClose, onSave }) => {
+  const [form, setForm] = useState({
+    titre:       ticket.titre,
+    service:     ticket.service,
+    cat:         ticket.cat,
+    description: ticket.description,
+  });
+  const [pri, setPri] = useState(ticket.priorite);
+
+  return (
+    <div className="emp-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="emp-modal">
+        <div className="emp-modal-head">
+          <div>
+            <div className="emp-modal-title">Modifier la réclamation</div>
+            <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2, fontFamily: "monospace" }}>{ticket.id}</div>
+          </div>
+          <button className="emp-close-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="emp-modal-body">
+          <div className="emp-modal-section">Informations générales</div>
+          <div className="emp-field">
+            <label>Titre *</label>
+            <input value={form.titre} onChange={(e) => setForm({ ...form, titre: e.target.value })}/>
+          </div>
+          <div className="emp-fields-row">
+            <div className="emp-field">
+              <label>Service *</label>
+              <select value={form.service} onChange={(e) => setForm({ ...form, service: e.target.value })}>
+                {["Comptabilité","Logistique","Support IT","Technique","RH","Finance","Maintenance"].map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="emp-field">
+              <label>Catégorie</label>
+              <select value={form.cat} onChange={(e) => setForm({ ...form, cat: e.target.value })}>
+                {["Facturation","Authentification","Transporteur A","Info client","Finance","Autre"].map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="emp-field">
+            <label>Description *</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}/>
+          </div>
+          <div className="emp-modal-section">Priorité</div>
+          <div className="emp-pri-group">
+            {["urgent","haute","normale","faible"].map((p) => (
+              <button key={p} className={`emp-pri-opt${pri === p ? ` sel-${p}` : ""}`} onClick={() => setPri(p)}>
+                {p.charAt(0).toUpperCase() + p.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="emp-modal-footer">
+          <button className="emp-btn-cancel" onClick={onClose}>Annuler</button>
+          <button className="emp-btn-submit" onClick={() => {
+            if (!form.titre.trim() || !form.service || !form.description.trim()) return;
+            onSave({ ...form, priorite: pri });
+          }}>
+            Enregistrer les modifications
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── CONFIRM DELETE ──────────────────────────────────────────────────────────
+const ConfirmDelete = ({ ticket, onCancel, onConfirm }) => (
+  <div className="emp-confirm-overlay" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+    <div className="emp-confirm-box">
+      <div className="emp-confirm-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" stroke="#EF4444" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <div className="emp-confirm-title">Supprimer cette réclamation ?</div>
+      <div className="emp-confirm-text">
+        Cette action est <strong>irréversible</strong>. La réclamation{" "}
+        <span className="emp-confirm-id">{ticket.id}</span>{" "}
+        sera définitivement supprimée.
+      </div>
+      <div className="emp-confirm-btns">
+        <button className="emp-confirm-cancel" onClick={onCancel}>Annuler</button>
+        <button className="emp-confirm-delete" onClick={() => onConfirm(ticket.id)}>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 // ── PAGE KANBAN ────────────────────────────────────────────────────────────
 const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
   const [activeFilter, setActiveFilter] = useState("toutes");
   const [selected,     setSelected]     = useState(null);
+  const [editTicket,   setEditTicket]   = useState(null);
+  const [deleteTicket, setDeleteTicket] = useState(null);
 
   const filterFn = (t) => {
     if (activeFilter === "creees")    return t.creePar;
@@ -564,28 +755,31 @@ const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
         const key = `${t.statut}→${toStatut}`;
         const tr  = TRANSITIONS[key] || { icon: "✏️", bg: "#F3F4F6", text: <>Statut mis à jour</> };
         const col = COLUMNS.find((c) => c.key === toStatut);
-        return {
-          ...t,
-          statut: toStatut,
-          prog:   col.prog,
-          timeline: [...t.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }],
-        };
+        return { ...t, statut: toStatut, prog: col.prog, timeline: [...t.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }] };
       })
     );
-    // Refresh detail panel if open
     setSelected((prev) => {
       if (!prev || prev.id !== id) return prev;
       const col = COLUMNS.find((c) => c.key === toStatut);
       const key = `${prev.statut}→${toStatut}`;
       const tr  = TRANSITIONS[key] || { icon: "✏️", bg: "#F3F4F6", text: <>Statut mis à jour</> };
-      return {
-        ...prev,
-        statut: toStatut,
-        prog:   col.prog,
-        timeline: [...prev.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }],
-      };
+      return { ...prev, statut: toStatut, prog: col.prog, timeline: [...prev.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }] };
     });
     showToast(`✅ Déplacé vers « ${statutLabel[toStatut]} »`);
+  };
+
+  const handleSaveEdit = (fields) => {
+    const updated = { ...editTicket, ...fields, timeline: [...editTicket.timeline, { icon: "✏️", bg: "#EEF2FF", text: <><strong>Réclamation modifiée</strong></>, time: nowStr() }] };
+    setTickets((prev) => prev.map((t) => t.id === updated.id ? updated : t));
+    setEditTicket(null);
+    showToast("✏️ Réclamation modifiée avec succès !");
+  };
+
+  const handleDelete = (id) => {
+    setTickets((prev) => prev.filter((t) => t.id !== id));
+    setDeleteTicket(null);
+    setSelected(null);
+    showToast("🗑️ Réclamation supprimée.");
   };
 
   return (
@@ -624,12 +818,36 @@ const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
             tickets={getCol(col.key)}
             onMove={moveTicket}
             onOpen={setSelected}
+            onEdit={setEditTicket}
+            onDelete={setDeleteTicket}
           />
         ))}
       </div>
 
       {selected && (
-        <DetailPanel ticket={selected} onClose={() => setSelected(null)} onMove={moveTicket} />
+        <DetailPanel
+          ticket={selected}
+          onClose={() => setSelected(null)}
+          onMove={moveTicket}
+          onEdit={setEditTicket}
+          onDelete={setDeleteTicket}
+        />
+      )}
+
+      {editTicket && (
+        <ModalModifier
+          ticket={editTicket}
+          onClose={() => setEditTicket(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
+
+      {deleteTicket && (
+        <ConfirmDelete
+          ticket={deleteTicket}
+          onCancel={() => setDeleteTicket(null)}
+          onConfirm={handleDelete}
+        />
       )}
     </>
   );
@@ -688,14 +906,80 @@ const ParametresPage = () => (
   </div>
 );
 
+// ── NOTIFICATION DATA ──────────────────────────────────────────────────────
+const NOTIFS_INIT = [
+  { id: 1,  unread: true,  icon: "📋", bg: "#EEF2FF", text: <><strong>Réclamation ID-88242</strong> assignée au service Comptabilité</>,         time: "Il y a 5 min"   },
+  { id: 2,  unread: true,  icon: "▶️", bg: "#FEF3C7", text: <><strong>Réclamation ID-61876</strong> est passée en <strong>En cours</strong></>,    time: "Il y a 22 min"  },
+  { id: 3,  unread: true,  icon: "💬", bg: "#F0FDF4", text: <><strong>Karim Alami</strong> vous a envoyé un message</>,                           time: "Il y a 45 min"  },
+  { id: 4,  unread: false, icon: "✅", bg: "#D1FAE5", text: <><strong>Réclamation ID-79100</strong> a été résolue avec succès</>,                  time: "Hier, 16:45"    },
+  { id: 5,  unread: false, icon: "⚠️", bg: "#FEF3C7", text: <>Votre réclamation <strong>ID-68245</strong> est en attente depuis 5 jours</>,       time: "Hier, 09:00"    },
+  { id: 6,  unread: false, icon: "👤", bg: "#F3E8FF", text: <><strong>Aya Saïdi</strong> a été assignée à votre réclamation ID-88312</>,          time: "12 Nov, 10:30"  },
+];
+
+// ── NOTIFICATION PANEL ─────────────────────────────────────────────────────
+const NotificationPanel = ({ notifs, onMarkAll, onMarkOne, onClose }) => {
+  const unreadCount = notifs.filter((n) => n.unread).length;
+
+  return (
+    <div className="emp-notif-overlay" onClick={onClose}>
+      <div className="emp-notif-panel" onClick={(e) => e.stopPropagation()}>
+        <div className="emp-notif-head">
+          <div className="emp-notif-title">
+            Notifications {unreadCount > 0 && (
+              <span style={{ marginLeft: 6, background: "#4F46E5", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 99, padding: "1px 7px" }}>
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          {unreadCount > 0 && (
+            <button className="emp-notif-mark-all" onClick={onMarkAll}>Tout marquer lu</button>
+          )}
+        </div>
+
+        <div className="emp-notif-list">
+          {notifs.length === 0 ? (
+            <div className="emp-notif-empty">
+              <div className="emp-notif-empty-icon">🔔</div>
+              <div className="emp-notif-empty-text">Aucune notification</div>
+            </div>
+          ) : (
+            notifs.map((n) => (
+              <div
+                key={n.id}
+                className={`emp-notif-item${n.unread ? " unread" : ""}`}
+                onClick={() => onMarkOne(n.id)}
+              >
+                <div className="emp-notif-icon" style={{ background: n.bg }}>{n.icon}</div>
+                <div className="emp-notif-content">
+                  <div className="emp-notif-text">{n.text}</div>
+                  <div className="emp-notif-time">{n.time}</div>
+                </div>
+                {n.unread && <div className="emp-notif-unread-dot"/>}
+              </div>
+            ))
+          )}
+        </div>
+
+        {notifs.length > 0 && (
+          <div className="emp-notif-footer">
+            <button className="emp-notif-footer-btn" onClick={onClose}>Fermer</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ── MAIN ───────────────────────────────────────────────────────────────────
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
 
-  const [activePage, setActivePage] = useState("mes");
-  const [tickets,    setTickets]    = useState(TICKETS_INIT);
-  const [showModal,  setShowModal]  = useState(false);
-  const [toast,      setToast]      = useState(null);
+  const [activePage,   setActivePage]   = useState("mes");
+  const [tickets,      setTickets]      = useState(TICKETS_INIT);
+  const [showModal,    setShowModal]    = useState(false);
+  const [toast,        setToast]        = useState(null);
+  const [notifs,       setNotifs]       = useState(NOTIFS_INIT);
+  const [showNotifs,   setShowNotifs]   = useState(false);
   const toastTimer = useRef(null);
 
   const showToast = (msg) => {
@@ -795,12 +1079,14 @@ export default function EmployeeDashboard() {
               <input placeholder="Rechercher une réclamation..."/>
             </div>
             <div className="emp-topbar-right">
-              <button className="emp-icon-btn">
+              <button className="emp-icon-btn" onClick={() => setShowNotifs((v) => !v)} style={{ position: "relative" }}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M8 1.5a5 5 0 015 5v2.5l1 2H1l1-2V6.5a5 5 0 015-5z" stroke="#6B7280" strokeWidth="1.4"/>
                   <path d="M6.5 13.5a1.5 1.5 0 003 0" stroke="#6B7280" strokeWidth="1.4"/>
                 </svg>
-                <span className="emp-notif-dot">2</span>
+                {notifs.filter(n => n.unread).length > 0 && (
+                  <span className="emp-notif-dot">{notifs.filter(n => n.unread).length}</span>
+                )}
               </button>
               <button className="emp-btn-new" onClick={() => setShowModal(true)}>
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -819,6 +1105,15 @@ export default function EmployeeDashboard() {
           <div className={activePage === "messagerie" ? "" : "emp-page-body"}>{renderPage()}</div>
         </div>
       </div>
+
+      {showNotifs && (
+        <NotificationPanel
+          notifs={notifs}
+          onMarkAll={() => setNotifs((prev) => prev.map((n) => ({ ...n, unread: false })))}
+          onMarkOne={(id) => setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, unread: false } : n))}
+          onClose={() => setShowNotifs(false)}
+        />
+      )}
 
       {showModal && (
         <ModalNouvelleReclamation onClose={() => setShowModal(false)} onSubmit={handleSubmit} />
