@@ -173,29 +173,77 @@ const CSS = `
   .toast { position: fixed; bottom: 24px; right: 24px; background: #1C1C2E; color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 999; box-shadow: 0 8px 28px rgba(0,0,0,0.18); animation: slideUp 0.3s ease; }
   @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 99px; }
+
+  /* MESSAGERIE STYLE */
+  .messagerie-page { display: grid; grid-template-columns: 330px 1fr; height: calc(100vh - 112px); background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #E5E7EB; }
+  .messages-list { border-right: 1px solid #E5E7EB; padding: 20px 18px; background: #fff; overflow-y: auto; }
+  .messages-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .messages-title-row h3 { font-family: 'Sora', sans-serif; font-size: 17px; color: #0F1117; }
+  .messages-title-row span { background: #EF4444; color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+  .messages-search { width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid #E5E7EB; background: #F4F5FA; outline: none; margin-bottom: 18px; font-family: 'DM Sans', sans-serif; color: #111827; }
+  .contact-list { display: flex; flex-direction: column; gap: 8px; }
+  .contact-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; cursor: pointer; position: relative; transition: background 0.18s; }
+  .contact-item:hover, .contact-item.active { background: #EEF2FF; }
+  .contact-avatar { width: 46px; height: 46px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+  .online-dot, .offline-dot { position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; }
+  .online-dot { background: #10B981; }
+  .offline-dot { background: #D1D5DB; }
+  .contact-info { flex: 1; min-width: 0; }
+  .contact-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .contact-top strong { font-size: 13px; color: #111827; }
+  .contact-top small { font-size: 10px; color: #9CA3AF; }
+  .contact-info p { font-size: 12px; color: #9CA3AF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .contact-role { font-size: 10px; color: #4F46E5; display: block; margin-top: 2px; }
+  .unread-badge { background: #4F46E5; color: #fff; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 3px 7px; }
+  .conversation-box { display: flex; flex-direction: column; background: #F4F5FA; min-width: 0; }
+  .conversation-header { height: 72px; background: #fff; border-bottom: 1px solid #E5E7EB; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+  .conversation-header h3 { font-size: 15px; font-family: 'Sora', sans-serif; color: #111827; }
+  .conversation-header p { font-size: 12px; color: #10B981; margin-top: 2px; }
+  .conversation-actions { margin-left: auto; display: flex; gap: 8px; }
+  .conversation-actions button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid #E5E7EB; background: #fff; cursor: pointer; }
+  .conversation-actions button:hover { background: #F4F5FA; }
+  .conversation-body { flex: 1; padding: 36px 26px; overflow-y: auto; }
+  .today-label { text-align: center; color: #B0B7C3; font-size: 11px; margin-bottom: 22px; }
+  .empty-conversation { text-align: center; color: #9CA3AF; font-size: 13px; margin-top: 80px; }
+  .message-line { display: flex; gap: 10px; margin-bottom: 18px; }
+  .message-line.me { justify-content: flex-end; }
+  .mini-avatar { width: 30px; height: 30px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .message-bubble { max-width: 560px; padding: 13px 16px; border-radius: 15px; font-size: 13.5px; line-height: 1.6; box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+  .message-bubble.other { background: #fff; color: #111827; border-top-left-radius: 4px; }
+  .message-bubble.me { background: #4F46E5; color: #fff; border-top-right-radius: 4px; }
+  .message-time { display: block; font-size: 10px; color: #9CA3AF; margin-top: 4px; }
+  .message-time.me { text-align: right; }
+  .conversation-input { background: #fff; border-top: 1px solid #E5E7EB; padding: 14px 20px; display: flex; gap: 8px; align-items: center; }
+  .conversation-input input { flex: 1; padding: 13px 15px; border-radius: 13px; border: 1px solid #E5E7EB; background: #F4F5FA; outline: none; font-size: 13px; color: #111827; font-family: 'DM Sans', sans-serif; }
+  .emoji-btn, .attach-btn, .send-message-btn { border: none; cursor: pointer; }
+  .emoji-btn, .attach-btn { background: transparent; font-size: 18px; }
+  .send-message-btn { width: 44px; height: 44px; border-radius: 13px; background: #4F46E5; color: #fff; font-size: 18px; }
+  .send-message-btn:hover { background: #4338CA; }
+  @media (max-width: 900px) { .messagerie-page { grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 112px); } .messages-list { border-right: none; border-bottom: 1px solid #E5E7EB; max-height: 310px; } .conversation-body { min-height: 420px; } }
+
 `;
 
 // ── ALL TICKETS — TOUS LES SERVICES ──────────────────────
 const ALL_TICKETS = [
   // Informatique
-  { id:"ID-98250", titre:"Panne serveur principal",      service:"Informatique", priorite:"urgent", statut:"cours",   date:"20/04/2026", assign:"Zakaria A.", desc:"Serveur tombé à 09h14, équipes mobilisées.", comments:[{author:"Zakaria A.",time:"Il y a 20 min",body:"Diagnostic en cours, problème réseau identifié."}], history:[{action:"Ticket créé",who:"Sarah L.",time:"20/04 09:14",color:"#4F46E5"},{action:"Assigné → Zakaria A.",who:"Admin",time:"20/04 09:20",color:"#10B981"},{action:"Statut → En cours",who:"Zakaria A.",time:"20/04 09:35",color:"#F59E0B"}] },
-  { id:"ID-97800", titre:"Accès refusé CRM",             service:"Informatique", priorite:"urgent", statut:"cours",   date:"17/04/2026", assign:"Zakaria A.", desc:"Plusieurs employés bloqués depuis hier.",    comments:[{author:"Admin",time:"Hier 16h",body:"Vérification des droits en cours."}], history:[{action:"Ticket créé",who:"Karim A.",time:"17/04 10:00",color:"#4F46E5"},{action:"Escaladé urgent",who:"Resp.",time:"17/04 10:30",color:"#EF4444"}] },
-  { id:"ID-97300", titre:"Problème imprimante",          service:"Informatique", priorite:"normal", statut:"resolu",  date:"14/04/2026", assign:"Sarah L.",   desc:"Imprimante 3e étage hors service.",         comments:[{author:"Sarah L.",time:"14/04",body:"Pilote réinstallé, résolu."}], history:[{action:"Ticket créé",who:"Omar A.",time:"14/04 08:30",color:"#4F46E5"},{action:"Résolu",who:"Sarah L.",time:"14/04 11:00",color:"#10B981"}] },
-  { id:"ID-96900", titre:"Logiciel non mis à jour",      service:"Informatique", priorite:"normal", statut:"attente", date:"12/04/2026", assign:"Zakaria A.", desc:"Mise à jour ERP non appliquée.",             comments:[], history:[{action:"Ticket créé",who:"Admin",time:"12/04 09:00",color:"#4F46E5"}] },
+  { id:"ID-98250", titre:"Panne serveur principal",      service:"Informatique", priorite:"urgent", statut:"cours",   date:"20/04/2026", assign:"Zakaria A.", assignType:"interne", desc:"Serveur tombé à 09h14, équipes mobilisées.", comments:[{author:"Zakaria A.",time:"Il y a 20 min",body:"Diagnostic en cours, problème réseau identifié."}], history:[{action:"Ticket créé",who:"Sarah L.",time:"20/04 09:14",color:"#4F46E5"},{action:"Assigné → Zakaria A.",who:"Admin",time:"20/04 09:20",color:"#10B981"},{action:"Statut → En cours",who:"Zakaria A.",time:"20/04 09:35",color:"#F59E0B"}] },
+  { id:"ID-97800", titre:"Accès refusé CRM",             service:"Informatique", priorite:"urgent", statut:"cours",   date:"17/04/2026", assign:"Zakaria A.", assignType:"interne", desc:"Plusieurs employés bloqués depuis hier.",    comments:[{author:"Admin",time:"Hier 16h",body:"Vérification des droits en cours."}], history:[{action:"Ticket créé",who:"Karim A.",time:"17/04 10:00",color:"#4F46E5"},{action:"Escaladé urgent",who:"Resp.",time:"17/04 10:30",color:"#EF4444"}] },
+  { id:"ID-97300", titre:"Problème imprimante",          service:"Informatique", priorite:"normal", statut:"resolu",  date:"14/04/2026", assign:"Sarah L.", assignType:"interne",   desc:"Imprimante 3e étage hors service.",         comments:[{author:"Sarah L.",time:"14/04",body:"Pilote réinstallé, résolu."}], history:[{action:"Ticket créé",who:"Omar A.",time:"14/04 08:30",color:"#4F46E5"},{action:"Résolu",who:"Sarah L.",time:"14/04 11:00",color:"#10B981"}] },
+  { id:"ID-96900", titre:"Logiciel non mis à jour",      service:"Informatique", priorite:"normal", statut:"attente", date:"12/04/2026", assign:"Zakaria A.", assignType:"interne", desc:"Mise à jour ERP non appliquée.",             comments:[], history:[{action:"Ticket créé",who:"Admin",time:"12/04 09:00",color:"#4F46E5"}] },
   // RH
-  { id:"ID-98110", titre:"Remboursement médical",        service:"RH",           priorite:"normal", statut:"attente", date:"19/04/2026", assign:"Aya S.",     desc:"Demande de remboursement frais médicaux.",  comments:[], history:[{action:"Ticket créé",who:"Employé",time:"19/04 14:00",color:"#4F46E5"}] },
-  { id:"ID-97100", titre:"Badge accès refusé",           service:"RH",           priorite:"urgent", statut:"cours",   date:"13/04/2026", assign:"Aya S.",     desc:"Badge d'un employé bloqué au portail.",     comments:[{author:"Aya S.",time:"13/04",body:"En contact avec la sécurité."}], history:[{action:"Ticket créé",who:"Employé",time:"13/04 08:00",color:"#4F46E5"},{action:"En cours",who:"Aya S.",time:"13/04 08:30",color:"#F59E0B"}] },
-  { id:"ID-96200", titre:"Congé non validé",             service:"RH",           priorite:"normal", statut:"resolu",  date:"08/04/2026", assign:"Aya S.",     desc:"Demande de congé sans réponse 5 jours.",    comments:[{author:"Aya S.",time:"08/04",body:"Congé validé et enregistré."}], history:[{action:"Ticket créé",who:"Employé",time:"08/04",color:"#4F46E5"},{action:"Résolu",who:"Aya S.",time:"09/04",color:"#10B981"}] },
+  { id:"ID-98110", titre:"Remboursement médical",        service:"RH",           priorite:"normal", statut:"attente", date:"19/04/2026", assign:"Aya S.", assignType:"interne",     desc:"Demande de remboursement frais médicaux.",  comments:[], history:[{action:"Ticket créé",who:"Employé",time:"19/04 14:00",color:"#4F46E5"}] },
+  { id:"ID-97100", titre:"Badge accès refusé",           service:"RH",           priorite:"urgent", statut:"cours",   date:"13/04/2026", assign:"Aya S.", assignType:"interne",     desc:"Badge d'un employé bloqué au portail.",     comments:[{author:"Aya S.",time:"13/04",body:"En contact avec la sécurité."}], history:[{action:"Ticket créé",who:"Employé",time:"13/04 08:00",color:"#4F46E5"},{action:"En cours",who:"Aya S.",time:"13/04 08:30",color:"#F59E0B"}] },
+  { id:"ID-96200", titre:"Congé non validé",             service:"RH",           priorite:"normal", statut:"resolu",  date:"08/04/2026", assign:"Aya S.", assignType:"interne",     desc:"Demande de congé sans réponse 5 jours.",    comments:[{author:"Aya S.",time:"08/04",body:"Congé validé et enregistré."}], history:[{action:"Ticket créé",who:"Employé",time:"08/04",color:"#4F46E5"},{action:"Résolu",who:"Aya S.",time:"09/04",color:"#10B981"}] },
   // Logistique
-  { id:"ID-97904", titre:"Livraison manquante",          service:"Logistique",   priorite:"normal", statut:"resolu",  date:"18/04/2026", assign:"Karim A.",   desc:"Colis commandé non reçu depuis 7 jours.",  comments:[{author:"Karim A.",time:"18/04",body:"Suivi transporteur confirmé, livré."}], history:[{action:"Ticket créé",who:"Omar A.",time:"18/04",color:"#4F46E5"},{action:"Résolu",who:"Karim A.",time:"19/04",color:"#10B981"}] },
-  { id:"ID-97200", titre:"Stock insuffisant",            service:"Logistique",   priorite:"urgent", statut:"cours",   date:"15/04/2026", assign:"Karim A.",   desc:"Stock de fournitures critique, commande urgente nécessaire.", comments:[], history:[{action:"Ticket créé",who:"Magasinier",time:"15/04",color:"#4F46E5"},{action:"En cours",who:"Karim A.",time:"15/04",color:"#F59E0B"}] },
-  { id:"ID-96700", titre:"Colis endommagé",              service:"Logistique",   priorite:"normal", statut:"resolu",  date:"11/04/2026", assign:"Karim A.",   desc:"Colis reçu avec dégâts importants.",        comments:[], history:[{action:"Ticket créé",who:"Employé",time:"11/04",color:"#4F46E5"},{action:"Résolu",who:"Karim A.",time:"12/04",color:"#10B981"}] },
+  { id:"ID-97904", titre:"Livraison manquante",          service:"Logistique",   priorite:"normal", statut:"resolu",  date:"18/04/2026", assign:"Karim A.", assignType:"interne",   desc:"Colis commandé non reçu depuis 7 jours.",  comments:[{author:"Karim A.",time:"18/04",body:"Suivi transporteur confirmé, livré."}], history:[{action:"Ticket créé",who:"Omar A.",time:"18/04",color:"#4F46E5"},{action:"Résolu",who:"Karim A.",time:"19/04",color:"#10B981"}] },
+  { id:"ID-97200", titre:"Stock insuffisant",            service:"Logistique",   priorite:"urgent", statut:"cours",   date:"15/04/2026", assign:"Karim A.", assignType:"interne",   desc:"Stock de fournitures critique, commande urgente nécessaire.", comments:[], history:[{action:"Ticket créé",who:"Magasinier",time:"15/04",color:"#4F46E5"},{action:"En cours",who:"Karim A.",time:"15/04",color:"#F59E0B"}] },
+  { id:"ID-96700", titre:"Colis endommagé",              service:"Logistique",   priorite:"normal", statut:"resolu",  date:"11/04/2026", assign:"Karim A.", assignType:"interne",   desc:"Colis reçu avec dégâts importants.",        comments:[], history:[{action:"Ticket créé",who:"Employé",time:"11/04",color:"#4F46E5"},{action:"Résolu",who:"Karim A.",time:"12/04",color:"#10B981"}] },
   // Finance
-  { id:"ID-97650", titre:"Facture incorrecte",           service:"Finance",      priorite:"normal", statut:"attente", date:"16/04/2026", assign:"Omar A.",    desc:"Facture fournisseur avec montant erroné.",  comments:[], history:[{action:"Ticket créé",who:"Comptable",time:"16/04",color:"#4F46E5"}] },
-  { id:"ID-96800", titre:"Retard paiement fournisseur",  service:"Finance",      priorite:"urgent", statut:"cours",   date:"11/04/2026", assign:"Omar A.",    desc:"Fournisseur X relance pour paiement.",      comments:[{author:"Omar A.",time:"11/04",body:"Virement initié, 3-5 jours ouvrés."}], history:[{action:"Ticket créé",who:"Finance",time:"11/04",color:"#4F46E5"},{action:"En cours",who:"Omar A.",time:"11/04",color:"#F59E0B"}] },
+  { id:"ID-97650", titre:"Facture incorrecte",           service:"Finance",      priorite:"normal", statut:"attente", date:"16/04/2026", assign:"Omar A.", assignType:"interne",    desc:"Facture fournisseur avec montant erroné.",  comments:[], history:[{action:"Ticket créé",who:"Comptable",time:"16/04",color:"#4F46E5"}] },
+  { id:"ID-96800", titre:"Retard paiement fournisseur",  service:"Finance",      priorite:"urgent", statut:"cours",   date:"11/04/2026", assign:"Omar A.", assignType:"interne",    desc:"Fournisseur X relance pour paiement.",      comments:[{author:"Omar A.",time:"11/04",body:"Virement initié, 3-5 jours ouvrés."}], history:[{action:"Ticket créé",who:"Finance",time:"11/04",color:"#4F46E5"},{action:"En cours",who:"Omar A.",time:"11/04",color:"#F59E0B"}] },
   // Maintenance
-  { id:"ID-97500", titre:"Climatisation en panne",       service:"Maintenance",  priorite:"normal", statut:"resolu",  date:"15/04/2026", assign:"Omar A.",    desc:"Climatisation open space hors service.",    comments:[{author:"Omar A.",time:"15/04",body:"Technicien intervenu, résolu."}], history:[{action:"Ticket créé",who:"Employé",time:"15/04",color:"#4F46E5"},{action:"Résolu",who:"Omar A.",time:"16/04",color:"#10B981"}] },
-  { id:"ID-96100", titre:"Ascenseur en panne",           service:"Maintenance",  priorite:"urgent", statut:"cours",   date:"07/04/2026", assign:"Omar A.",    desc:"Ascenseur bloqué entre 2e et 3e étage.",   comments:[{author:"Omar A.",time:"07/04",body:"Technicien spécialisé contacté."}], history:[{action:"Ticket créé",who:"Sécurité",time:"07/04",color:"#4F46E5"},{action:"Urgent déclaré",who:"Resp.",time:"07/04",color:"#EF4444"}] },
+  { id:"ID-97500", titre:"Climatisation en panne",       service:"Maintenance",  priorite:"normal", statut:"resolu",  date:"15/04/2026", assign:"Omar A.", assignType:"interne",    desc:"Climatisation open space hors service.",    comments:[{author:"Omar A.",time:"15/04",body:"Technicien intervenu, résolu."}], history:[{action:"Ticket créé",who:"Employé",time:"15/04",color:"#4F46E5"},{action:"Résolu",who:"Omar A.",time:"16/04",color:"#10B981"}] },
+  { id:"ID-96100", titre:"Ascenseur en panne",           service:"Maintenance",  priorite:"urgent", statut:"cours",   date:"07/04/2026", assign:"Omar A.", assignType:"interne",    desc:"Ascenseur bloqué entre 2e et 3e étage.",   comments:[{author:"Omar A.",time:"07/04",body:"Technicien spécialisé contacté."}], history:[{action:"Ticket créé",who:"Sécurité",time:"07/04",color:"#4F46E5"},{action:"Urgent déclaré",who:"Resp.",time:"07/04",color:"#EF4444"}] },
 ];
 
 const SERVICES_META = [
@@ -216,6 +264,9 @@ const NOTIFS_INIT = [
 ];
 
 const statutLabel = { cours:"En cours", resolu:"Résolu", attente:"En attente" };
+
+const INTERVENANTS_INTERNES = ["Zakaria A.", "Sarah L.", "Aya S.", "Karim A.", "Omar A.", "Employé IT", "Responsable RH"];
+const INTERVENANTS_EXTERNES = ["Société TechFix", "Maintenance Pro", "Transport Express", "Cabinet Comptable Externe", "Sécurité Plus"];
 
 // ── BOT RESPONSE ──────────────────────────────────────────
 const getBotResponse = (msg, tickets) => {
@@ -282,10 +333,26 @@ const Logo = () => (
 );
 
 // ── TICKET DETAIL PANEL ───────────────────────────────────
-const TicketDetail = ({ ticket, onClose, onUpdateStatut, onUpdatePriorite, onAddComment }) => {
+const TicketDetail = ({ ticket, onClose, onUpdateStatut, onUpdatePriorite, onUpdateAssign, onAddComment }) => {
   const [comment,  setComment]  = useState("");
   const [statut,   setStatut]   = useState(ticket.statut);
   const [priorite, setPriorite] = useState(ticket.priorite);
+  const [assignType, setAssignType] = useState(ticket.assignType || "interne");
+  const [assign, setAssign] = useState(ticket.assign || INTERVENANTS_INTERNES[0]);
+
+  const assignOptions = assignType === "interne" ? INTERVENANTS_INTERNES : INTERVENANTS_EXTERNES;
+
+  const changeAssignType = (type) => {
+    const firstValue = type === "interne" ? INTERVENANTS_INTERNES[0] : INTERVENANTS_EXTERNES[0];
+    setAssignType(type);
+    setAssign(firstValue);
+    onUpdateAssign(ticket.id, firstValue, type);
+  };
+
+  const changeAssign = (value) => {
+    setAssign(value);
+    onUpdateAssign(ticket.id, value, assignType);
+  };
 
   return (
     <div className="detail-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -299,12 +366,26 @@ const TicketDetail = ({ ticket, onClose, onUpdateStatut, onUpdatePriorite, onAdd
           <span className={`tbadge ${priorite === "urgent" ? "urgent" : "normal"}`}>{priorite}</span>
           <span className={`tbadge ${statut}`}>{statutLabel[statut]}</span>
           <span style={{ fontSize: 10.5, background: "#F4F5FA", padding: "3px 8px", borderRadius: 5, color: "#6B7280" }}>{ticket.service}</span>
+          <span style={{ fontSize: 10.5, background: assignType === "interne" ? "#EEF2FF" : "#FEF3C7", padding: "3px 8px", borderRadius: 5, color: assignType === "interne" ? "#4F46E5" : "#D97706", fontWeight: 700 }}>{assignType}</span>
         </div>
         <p style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.6 }}>{ticket.desc}</p>
         <div className="divider"/>
-        {[["Service", ticket.service], ["Date", ticket.date], ["Assigné à", ticket.assign]].map(([k,v]) => (
+        {[["Service", ticket.service], ["Date", ticket.date]].map(([k,v]) => (
           <div className="dp-row" key={k}><span className="dk">{k}</span><span className="dv">{v}</span></div>
         ))}
+        <div className="dp-row">
+          <span className="dk">Type intervenant</span>
+          <select className="mini-select" value={assignType} onChange={e => changeAssignType(e.target.value)}>
+            <option value="interne">Interne</option>
+            <option value="externe">Externe</option>
+          </select>
+        </div>
+        <div className="dp-row">
+          <span className="dk">Assigné à</span>
+          <select className="mini-select" value={assign} onChange={e => changeAssign(e.target.value)}>
+            {assignOptions.map(name => <option key={name} value={name}>{name}</option>)}
+          </select>
+        </div>
         <div className="dp-row">
           <span className="dk">Statut</span>
           <select className="mini-select" value={statut} onChange={e => { setStatut(e.target.value); onUpdateStatut(ticket.id, e.target.value); }}>
@@ -438,6 +519,11 @@ const TicketsPage = ({ tickets, setTickets, showToast, filterServiceInit }) => {
     if (selected?.id === id) setSelected(p => ({ ...p, priorite: val }));
     showToast("⚡ Priorité mise à jour !");
   };
+  const updateAssign = (id, assign, assignType) => {
+    setTickets(p => p.map(t => t.id === id ? { ...t, assign, assignType, history: [...t.history, { action:`Assigné à → ${assign} (${assignType})`, who:"Responsable", time:"À l'instant", color:"#10B981" }] } : t));
+    if (selected?.id === id) setSelected(p => ({ ...p, assign, assignType }));
+    showToast("👤 Assignation mise à jour !");
+  };
   const addComment = (id, body) => {
     const nc = { author:"Responsable", time:"À l'instant", body };
     setTickets(p => p.map(t => t.id === id ? { ...t, comments:[...t.comments, nc], history:[...t.history, { action:"Commentaire ajouté", who:"Responsable", time:"À l'instant", color:"#10B981" }] } : t));
@@ -469,10 +555,10 @@ const TicketsPage = ({ tickets, setTickets, showToast, filterServiceInit }) => {
         </div>
         <div style={{ overflowX:"auto" }}>
           <table className="tickets-table">
-            <thead><tr><th>ID</th><th>Titre</th><th>Service</th><th>Priorité</th><th>Statut</th><th>Assigné</th><th>Date</th></tr></thead>
+            <thead><tr><th>ID</th><th>Titre</th><th>Service</th><th>Priorité</th><th>Statut</th><th>Type</th><th>Assigné</th><th>Date</th></tr></thead>
             <tbody>
               {filtered.length === 0
-                ? <tr><td colSpan={7} style={{ textAlign:"center", padding:28, color:"#9CA3AF", fontSize:13 }}>Aucun ticket trouvé</td></tr>
+                ? <tr><td colSpan={8} style={{ textAlign:"center", padding:28, color:"#9CA3AF", fontSize:13 }}>Aucun ticket trouvé</td></tr>
                 : filtered.map(t => (
                   <tr key={t.id} onClick={() => setSelected(t)}>
                     <td style={{ fontFamily:"monospace", fontSize:11, color:"#9CA3AF" }}>{t.id}</td>
@@ -485,6 +571,7 @@ const TicketsPage = ({ tickets, setTickets, showToast, filterServiceInit }) => {
                     </td>
                     <td><span className={`tbadge ${t.priorite==="urgent"?"urgent":"normal"}`}>{t.priorite}</span></td>
                     <td><span className={`tbadge ${t.statut}`}>{statutLabel[t.statut]}</span></td>
+                    <td><span className="tbadge normal">{t.assignType || "interne"}</span></td>
                     <td style={{ fontSize:12 }}>{t.assign}</td>
                     <td style={{ fontSize:12, color:"#9CA3AF" }}>{t.date}</td>
                   </tr>
@@ -494,98 +581,107 @@ const TicketsPage = ({ tickets, setTickets, showToast, filterServiceInit }) => {
           </table>
         </div>
       </div>
-      {selected && <TicketDetail ticket={selected} onClose={() => setSelected(null)} onUpdateStatut={updateStatut} onUpdatePriorite={updatePriorite} onAddComment={addComment}/>}
+      {selected && <TicketDetail ticket={selected} onClose={() => setSelected(null)} onUpdateStatut={updateStatut} onUpdatePriorite={updatePriorite} onUpdateAssign={updateAssign} onAddComment={addComment}/>}
     </div>
   );
 };
 
-// ── CHATBOT PAGE ──────────────────────────────────────────
-const ChatbotPage = ({ tickets }) => {
-  const [messages, setMessages] = useState([
-    { id:1, from:"bot", text:"Bonjour ! 👋 Je suis l'assistant Bayan — Responsable de Service.\n\nJe surveille **tous vos services** : Informatique, RH, Logistique, Finance et Maintenance.\n\nComment puis-je vous aider ?", time:"maintenant" }
-  ]);
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
-  const bottomRef = useRef(null);
+// ── MESSAGERIE PAGE ───────────────────────────────────────
+const ChatbotPage = () => {
+  const contacts = [
+    { id:"karim", name:"Karim Alami", role:"Admin", avatar:"KA", color:"#4F46E5", online:true, last:"Priorité haute confirmée.", time:"09:17", unread:0 },
+    { id:"sarah", name:"Sarah Lemarié", role:"Employée", avatar:"SL", color:"#10B981", online:true, last:"J’ai ajouté une nouvelle réclamation.", time:"09:12", unread:2 },
+    { id:"aya", name:"Aya Saïdi", role:"Employée", avatar:"AS", color:"#F59E0B", online:true, last:"Reçu merci ! Je traite ça demain.", time:"14:50", unread:1 },
+    { id:"zakaria", name:"Zakaria A.", role:"Intervenant interne", avatar:"ZA", color:"#06B6D4", online:true, last:"Diagnostic en cours sur le serveur.", time:"10:26", unread:0 },
+    { id:"techfix", name:"TechFix SARL", role:"Intervenant externe", avatar:"TF", color:"#EF4444", online:false, last:"Technicien disponible demain matin.", time:"Hier", unread:0 },
+    { id:"nadia", name:"Nadia Benali", role:"Admin", avatar:"NB", color:"#8B5CF6", online:true, last:"Démarrer une conversation", time:"", unread:2 },
+    { id:"omar", name:"Omar Tahiri", role:"Maintenance externe", avatar:"OT", color:"#EC4899", online:false, last:"Démarrer une conversation", time:"", unread:0 },
+    { id:"leila", name:"Leila Mansouri", role:"Employée", avatar:"LM", color:"#0EA5E9", online:true, last:"Merci, c’est noté !", time:"08:30", unread:0 },
+  ];
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, typing]);
-
-  const send = (msg) => {
-    const text = (msg || input).trim();
-    if (!text) return;
-    setMessages(p => [...p, { id:Date.now(), from:"user", text, time:"maintenant" }]);
-    setInput("");
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      setMessages(p => [...p, { id:Date.now()+1, from:"bot", text:getBotResponse(text, tickets), time:"maintenant" }]);
-    }, 800 + Math.random() * 500);
+  const initialMessages = {
+    karim: [
+      { id:1, from:"other", text:"Bonjour, as-tu avancé sur la réclamation ID-98250 ?", time:"09:10" },
+      { id:2, from:"me", text:"Oui, j’ai transmis le dossier au service informatique ce matin. En attente de leur retour.", time:"09:14" },
+      { id:3, from:"other", text:"Parfait, tiens-moi informé dès que tu as une réponse. Priorité haute ce dossier.", time:"09:16" },
+      { id:4, from:"me", text:"Bien sûr, je reviens vers toi dans la journée 👍", time:"09:17" },
+    ],
+    sarah: [
+      { id:1, from:"other", text:"Bonjour, j’ai ajouté une nouvelle réclamation concernant l’accès CRM.", time:"09:02" },
+      { id:2, from:"me", text:"Bonjour Sarah, je vais l’assigner à un intervenant interne IT.", time:"09:05" },
+    ],
+    aya: [{ id:1, from:"other", text:"Reçu merci ! Je traite ça demain.", time:"14:50" }],
+    zakaria: [
+      { id:1, from:"other", text:"Le diagnostic est en cours, problème réseau identifié.", time:"10:22" },
+      { id:2, from:"me", text:"Merci Zakaria, ajoute un commentaire dans la réclamation après intervention.", time:"10:24" },
+    ],
+    techfix: [
+      { id:1, from:"other", text:"Bonjour, notre technicien peut intervenir demain matin pour l’ascenseur.", time:"Hier" },
+      { id:2, from:"me", text:"Très bien, je confirme l’intervention externe.", time:"Hier" },
+    ],
+    nadia: [],
+    omar: [],
+    leila: [{ id:1, from:"other", text:"Merci, c’est noté !", time:"08:30" }],
   };
 
-  const fmt = (text) => text.split("\n").map((line, i) => (
-    <div key={i} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>") || "&nbsp;" }}/>
-  ));
+  const [activeContact, setActiveContact] = useState("karim");
+  const [messagesByContact, setMessagesByContact] = useState(initialMessages);
+  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
+  const bottomRef = useRef(null);
 
-  const suggestions = ["Tickets urgents", "Statistiques globales", "Service Logistique", "Service RH", "En attente", "Bilan tous services"];
+  const currentContact = contacts.find(c => c.id === activeContact) || contacts[0];
+  const currentMessages = messagesByContact[activeContact] || [];
+  const filteredContacts = contacts.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.role.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [activeContact, messagesByContact]);
+
+  const send = () => {
+    const text = input.trim();
+    if (!text) return;
+    const newMessage = { id:Date.now(), from:"me", text, time:"maintenant" };
+    setMessagesByContact(prev => ({ ...prev, [activeContact]: [...(prev[activeContact] || []), newMessage] }));
+    setInput("");
+  };
 
   return (
-    <div className="chat-layout">
-      <div className="chat-sidebar">
-        <div className="chat-info-card">
-          <div className="chat-info-title">Questions rapides</div>
-          {suggestions.map(s => <div key={s} className="suggestion" onClick={() => send(s)}>{s}</div>)}
-        </div>
-        <div className="chat-info-card">
-          <div className="chat-info-title">Résumé global</div>
-          {SERVICES_META.map(s => {
-            const st = tickets.filter(t => t.service === s.name);
-            const urg = st.filter(t => t.priorite === "urgent").length;
-            return (
-              <div key={s.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom:"1px solid #F3F4F6", fontSize:12.5 }}>
-                <span style={{ color:"#374151" }}>{s.icon} {s.name}</span>
-                <span style={{ display:"flex", gap:6, alignItems:"center" }}>
-                  <span style={{ fontWeight:600, color:"#111827" }}>{st.length}</span>
-                  {urg > 0 && <span style={{ background:"#FEE2E2", color:"#DC2626", fontSize:9, fontWeight:700, padding:"1px 5px", borderRadius:4 }}>{urg}!</span>}
-                </span>
+    <div className="messagerie-page">
+      <div className="messages-list">
+        <div className="messages-title-row"><h3>Messages</h3><span>3 nouveaux</span></div>
+        <input className="messages-search" placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)}/>
+        <div className="contact-list">
+          {filteredContacts.map(c => (
+            <div key={c.id} className={`contact-item ${activeContact === c.id ? "active" : ""}`} onClick={() => setActiveContact(c.id)}>
+              <div className="contact-avatar" style={{ background:c.color }}>{c.avatar}<span className={c.online ? "online-dot" : "offline-dot"}/></div>
+              <div className="contact-info">
+                <div className="contact-top"><strong>{c.name}</strong><small>{c.time}</small></div>
+                <p>{c.last}</p><small className="contact-role">{c.role}</small>
               </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="chat-main">
-        <div className="chat-header">
-          <div className="bot-av">🤖</div>
-          <div>
-            <div className="bot-name">Assistant Bayan</div>
-            <div className="bot-status"><span className="s-dot"/>En ligne — Tous services</div>
-          </div>
-        </div>
-        <div className="chat-messages">
-          {messages.map(m => (
-            <div key={m.id} className={`msg-wrap ${m.from}`}>
-              {m.from === "bot"
-                ? <div className="msg-av" style={{ background:"linear-gradient(135deg,#4F46E5,#818CF8)", borderRadius:10, fontSize:14 }}>🤖</div>
-                : <div className="msg-av" style={{ background:"#4F46E5" }}>RS</div>
-              }
-              <div>
-                <div className={`bubble ${m.from}`}>{fmt(m.text)}</div>
-                <div className={`msg-time ${m.from}`}>{m.time}</div>
-              </div>
+              {c.unread > 0 && <span className="unread-badge">{c.unread}</span>}
             </div>
           ))}
-          {typing && (
-            <div className="msg-wrap">
-              <div className="msg-av" style={{ background:"linear-gradient(135deg,#4F46E5,#818CF8)", borderRadius:10, fontSize:14 }}>🤖</div>
-              <div className="typing"><div className="td"/><div className="td"/><div className="td"/></div>
+        </div>
+      </div>
+      <div className="conversation-box">
+        <div className="conversation-header">
+          <div className="contact-avatar" style={{ background:currentContact.color }}>{currentContact.avatar}<span className={currentContact.online ? "online-dot" : "offline-dot"}/></div>
+          <div><h3>{currentContact.name}</h3><p>{currentContact.online ? "En ligne" : "Hors ligne"} · {currentContact.role}</p></div>
+          <div className="conversation-actions"><button title="Appel">☎</button><button title="Vidéo">🎥</button><button title="Infos">ⓘ</button></div>
+        </div>
+        <div className="conversation-body">
+          <div className="today-label">Aujourd’hui</div>
+          {currentMessages.length === 0 && <div className="empty-conversation">Démarrer une conversation avec {currentContact.name}</div>}
+          {currentMessages.map(m => (
+            <div key={m.id} className={`message-line ${m.from === "me" ? "me" : "other"}`}>
+              {m.from !== "me" && <div className="mini-avatar" style={{ background:currentContact.color }}>{currentContact.avatar}</div>}
+              <div><div className={`message-bubble ${m.from === "me" ? "me" : "other"}`}>{m.text}</div><small className={`message-time ${m.from === "me" ? "me" : "other"}`}>{m.time}</small></div>
             </div>
-          )}
+          ))}
           <div ref={bottomRef}/>
         </div>
-        <div className="chat-input-area">
-          <textarea className="chat-input" rows={1} placeholder="Posez votre question..." value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}/>
-          <button className="send-btn" onClick={() => send()}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5L7 9M13.5 2.5L9 13.5L7 9M13.5 2.5L2.5 6.5L7 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </button>
+        <div className="conversation-input">
+          <input placeholder={`Message à ${currentContact.name}...`} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if(e.key === "Enter"){ e.preventDefault(); send(); } }}/>
+          <button className="emoji-btn" type="button">😊</button><button className="attach-btn" type="button">📎</button><button className="send-message-btn" onClick={send} type="button">➤</button>
         </div>
       </div>
     </div>
@@ -633,11 +729,11 @@ const navItems = [
     icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>, badge:"urgents" },
   { key:"activite",  label:"Activité récente",
     icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5l2 1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
-  { key:"chatbot",   label:"Assistant IA",
+  { key:"chatbot",   label:"Messagerie",
     icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="3" stroke="currentColor" strokeWidth="1.4"/><path d="M4 14l2-2M12 14l-2-2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
 ];
 
-const pageTitles = { overview:"Vue d'ensemble — Tous les services", tickets:"Toutes les Réclamations", activite:"Activité récente", chatbot:"Assistant IA" };
+const pageTitles = { overview:"Vue d'ensemble — Tous les services", tickets:"Toutes les Réclamations", activite:"Activité récente", chatbot:"Messagerie" };
 
 // ── MAIN EXPORT ───────────────────────────────────────────
 export default function Responsable() {
