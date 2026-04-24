@@ -37,8 +37,8 @@ const Logo = () => (
 );
 
 export default function Login() {
-  const navigate      = useNavigate();
-  const { login }     = useAuth();
+  const navigate  = useNavigate();
+  const { login } = useAuth();
 
   const [email,   setEmail]   = useState("");
   const [mdp,     setMdp]     = useState("");
@@ -61,10 +61,10 @@ export default function Login() {
       return;
     }
 
-    // Redirection selon le rôle venant de Laravel
     const { role } = result.user;
     if (role === "admin")            navigate("/dashboard");
     else if (role === "responsable") navigate("/responsable");
+    else if (role === "intervenant") navigate("/intervenant");
     else                             navigate("/employee");
   };
 
@@ -81,7 +81,6 @@ export default function Login() {
 
         <div className="login-center">
           <div className="login-card">
-
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
@@ -140,7 +139,6 @@ export default function Login() {
             <div className="secure-note">
               🔒 Accès sécurisé — Personnel interne uniquement
             </div>
-
           </div>
         </div>
       </div>

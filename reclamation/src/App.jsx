@@ -8,6 +8,7 @@ import Login from "./Login";
 import Dashboard from "./Dashboard";
 import Responsable from "./Responsable";
 import EmployeeDashboard from "./EmployeeDashboard";
+import IntervenantDashboard from "./IntervenantDashboard";
 
 export default function App() {
   return (
@@ -36,6 +37,12 @@ export default function App() {
           <Route path="/employee" element={
             <ProtectedRoute roles={["employe"]}>
               <EmployeeDashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/intervenant" element={
+            <ProtectedRoute roles={["intervenant"]}>
+              <IntervenantDashboard />
             </ProtectedRoute>
           } />
 
