@@ -17,7 +17,9 @@ class MessageController extends Controller
     {
         $meId = $this->currentUserId();
 
-        $users = User::where('id', '!=', $meId)->get();
+$users = User::where('id', '!=', $meId)
+    ->whereIn('role', ['employe', 'intervenant'])
+    ->get();
 
         $contacts = $users->map(function ($user) use ($meId) {
             $lastMsg = Message::where(function ($q) use ($meId, $user) {
