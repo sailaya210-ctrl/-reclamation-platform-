@@ -122,4 +122,61 @@ class TicketController extends Controller
                                 ->groupBy('service')->get(),
         ]);
     }
+
+// ── RESPONSABLE : ASSIGNER INTERVENANT ─────────────────────
+public function assign(Request $request, $id)
+{
+    $request->validate([
+        'assigned_to' => 'required|exists:users,id',
+    ]);
+
+    $ticket = Ticket::findOrFail($id);
+
+    $ticket->update([
+        'assigned_to' => $request->assigned_to,
+        'statut' => 'cours',
+    ]);
+
+    return response()->json([
+        'message' => 'Ticket assigné avec succès.',
+        'ticket' => $ticket->load(['createdBy:id,nom,email', 'assignedTo:id,nom,email']),
+    ]);
+}
+
+// ── RESPONSABLE : MODIFIER STATUT ──────────────────────────
+public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'statut' => 'required|in:attente,cours,resolu',
+    ]);
+
+    $ticket = Ticket::findOrFail($id);
+    $ticket->update([
+        'statut' => $request->statut,
+    ]);
+
+    return response()->json([
+        'message' => 'Statut mis à jour.',
+        'ticket' => $ticket,
+    ]);
+}
+
+// ── RESPONSABLE : MODIFIER PRIORITÉ ────────────────────────
+public function updatePriority(Request $request, $id)
+{
+    $request->validate([
+        'priorite' => 'required|in:normal,urgent',
+    ]);
+
+    $ticket = Ticket::findOrFail($id);
+    $ticket->update([
+        'priorite' => $request->priorite,
+    ]);
+
+    return response()->json([
+        'message' => 'Priorité mise à jour.',
+        'ticket' => $ticket,
+    ]);
+}
+
 }
