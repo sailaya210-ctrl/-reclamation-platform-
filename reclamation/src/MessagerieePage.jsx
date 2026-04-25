@@ -119,6 +119,81 @@ export const MSG_CSS = `
 
   .msg-contacts-list::-webkit-scrollbar { width: 3px; }
   .msg-contacts-list::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 99px; }
+ 
+
+.msg-file {
+  text-decoration: none;
+  color: inherit;
+}
+
+@media (max-width: 900px) {
+  .msg-layout {
+    height: calc(100vh - 96px);
+    max-height: calc(100vh - 96px);
+  }
+
+  .msg-contacts {
+    width: 260px;
+  }
+
+  .msg-bubble-wrap {
+    max-width: 78%;
+  }
+}
+
+@media (max-width: 600px) {
+  .msg-layout {
+    flex-direction: column;
+    height: calc(100vh - 70px);
+    max-height: calc(100vh - 70px);
+  }
+
+  .msg-contacts {
+    width: 100%;
+    height: 38%;
+    min-height: 230px;
+    border-right: none;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .msg-chat {
+    height: 62%;
+    min-height: 0;
+  }
+
+  .msg-chat-header {
+    height: 54px;
+    padding: 0 12px;
+  }
+
+  .msg-messages {
+    padding: 12px;
+  }
+
+  .msg-bubble-wrap {
+    max-width: 88%;
+  }
+
+  .msg-input-bar {
+    padding: 8px;
+    gap: 7px;
+  }
+
+  .msg-input-wrap {
+    padding: 8px 9px;
+  }
+
+  .msg-input-wrap textarea {
+    font-size: 12.5px;
+  }
+
+  .msg-send-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+
 
   @keyframes msgSlideIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
 `;
