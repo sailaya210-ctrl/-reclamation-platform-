@@ -177,6 +177,8 @@ public function updatePriority(Request $request, $id)
         'message' => 'Priorité mise à jour.',
         'ticket' => $ticket,
     ]);
+    
 }
+
 
 }
