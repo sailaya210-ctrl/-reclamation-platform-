@@ -70,7 +70,6 @@ export const ticketsAPI = {
 
   getStats: () => apiFetch("/stats"),
 
-  // Responsable Service
   assign: (id, userId) =>
     apiFetch(`/tickets/${id}/assign`, {
       method: "PUT",
@@ -103,4 +102,41 @@ export const usersAPI = {
     apiFetch(`/users/${id}`, {
       method: "DELETE",
     }),
+};
+
+// ── MESSAGES API ──────────────────────────────────────────────────────────
+export const messagesAPI = {
+  // Liste des contacts avec dernier message + non lus
+  getContacts: () => apiFetch("/messages/contacts"),
+
+  // Historique complet de la conversation avec un user
+  getConversation: (userId) => apiFetch(`/messages/${userId}`),
+
+  // Envoyer un message
+  send: (receiverId, contenu, file = null) => {
+  const formData = new FormData();
+  formData.append("receiver_id", receiverId);
+  formData.append("contenu", contenu);
+
+  if (file) {
+    formData.append("file", file);
+  }
+
+  const token = localStorage.getItem("bayan_token");
+
+  return fetch("http://localhost:8000/api/messages", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  }).then(async (res) => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Erreur serveur");
+    return data;
+  });
+},
+ 
+ 
+
+  // Nombre total de messages non lus
+  getUnreadCount: () => apiFetch("/messages/unread"),
 };

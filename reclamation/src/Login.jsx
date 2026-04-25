@@ -60,7 +60,6 @@ export default function Login() {
       setErreur(result.error);
       return;
     }
-      localStorage.setItem("bayan_token", result.token);
 
     const { role } = result.user;
     if (role === "admin")            navigate("/dashboard");

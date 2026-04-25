@@ -177,7 +177,6 @@ const CSS = `
   ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 99px; }
 
   /* MESSAGERIE STYLE */
-  .messagerie-page { display: grid; grid-template-columns: 330px 1fr; height: calc(100vh - 112px); background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #E5E7EB; }
   .messages-list { border-right: 1px solid #E5E7EB; padding: 20px 18px; background: #fff; overflow-y: auto; }
   .messages-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
   .messages-title-row h3 { font-family: 'Sora', sans-serif; font-size: 17px; color: #0F1117; }
@@ -460,20 +459,12 @@ const TicketDetail = ({ ticket, onClose, onUpdateStatut, onUpdatePriorite, onUpd
           <span className={`tbadge ${priorite === "urgent" ? "urgent" : "normal"}`}>{priorite}</span>
           <span className={`tbadge ${statut}`}>{statutLabel[statut]}</span>
           <span style={{ fontSize: 10.5, background: "#F4F5FA", padding: "3px 8px", borderRadius: 5, color: "#6B7280" }}>{ticket.service}</span>
-          <span style={{ fontSize: 10.5, background: assignType === "interne" ? "#EEF2FF" : "#FEF3C7", padding: "3px 8px", borderRadius: 5, color: assignType === "interne" ? "#4F46E5" : "#D97706", fontWeight: 700 }}>{assignType}</span>
         </div>
         <p style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.6 }}>{ticket.desc}</p>
         <div className="divider"/>
         {[["Service", ticket.service], ["Date", ticket.date]].map(([k,v]) => (
           <div className="dp-row" key={k}><span className="dk">{k}</span><span className="dv">{v}</span></div>
         ))}
-        <div className="dp-row">
-          <span className="dk">Type intervenant</span>
-          <select className="mini-select" value={assignType} onChange={e => changeAssignType(e.target.value)}>
-            <option value="interne">Interne</option>
-            <option value="externe">Externe</option>
-          </select>
-        </div>
         <div className="dp-row">
           <span className="dk">Assigné à</span>
           <select className="mini-select" value={assign} onChange={e => changeAssign(e.target.value)}>
