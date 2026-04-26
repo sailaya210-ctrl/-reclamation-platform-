@@ -11,12 +11,14 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->string('titre');
-            $table->text('description')->nullable();
             $table->string('service');
-            $table->enum('priorite', ['normal', 'urgent'])->default('normal');
+            $table->string('categorie')->default('Autre');
+            $table->text('description');
+            $table->enum('priorite', ['urgent', 'haute', 'normale', 'faible'])->default('normale');
             $table->enum('statut', ['attente', 'cours', 'resolu'])->default('attente');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->json('comments')->nullable();
             $table->timestamps();
         });
     }
