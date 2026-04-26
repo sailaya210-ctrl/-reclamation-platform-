@@ -18,7 +18,12 @@ const apiFetch = async (endpoint, options = {}) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "Erreur serveur");
+    // Laravel validation errors come in data.errors (object), not data.message
+    if (data.errors) {
+      const messages = Object.values(data.errors).flat().join(" | ");
+      throw new Error(messages);
+    }
+    throw new Error(data.message || `Erreur serveur (${response.status})`);
   }
 
   return data;

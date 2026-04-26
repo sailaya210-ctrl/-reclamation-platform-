@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { usersAPI } from "./api";
+import { useAuth } from "./AuthContext";
 
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
@@ -219,7 +221,7 @@ const TICKETS_INIT = [
   { id: "ID-97904", titre: "Livraison manquante",      service: "Logistique",   priorite: "normal", statut: "resolu",  date: "18/04/2026", assign: "Zakaria A.", comments: [{ author: "Admin", time: "Hier", body: "Ticket clôturé avec succès." }] },
   { id: "ID-97800", titre: "Accès refusé CRM",         service: "Informatique", priorite: "urgent", statut: "cours",   date: "17/04/2026", assign: "Karim A.",   comments: [] },
   { id: "ID-97650", titre: "Facture incorrecte",       service: "Finance",      priorite: "normal", statut: "attente", date: "16/04/2026", assign: "Aya S.",     comments: [] },
-  { id: "ID-97500", titre: "Climatisation en panne",   service: "Maintenance",  priorite: "normal", statut: "resolu",  date: "15/04/2026", assign: "Omar A.",    comments: [] },
+  { id: "ID-97500", titre: "Climatisation en panne",   service: "Extérieure",   priorite: "normal", statut: "resolu",  date: "15/04/2026", assign: "Omar A.",    comments: [] },
   { id: "ID-97300", titre: "Problème imprimante",      service: "Informatique", priorite: "normal", statut: "resolu",  date: "14/04/2026", assign: "Sarah L.",   comments: [] },
   { id: "ID-97100", titre: "Badge accès refusé",       service: "RH",           priorite: "urgent", statut: "cours",   date: "13/04/2026", assign: "Aya S.",     comments: [] },
   { id: "ID-96900", titre: "Logiciel non mis à jour",  service: "Informatique", priorite: "normal", statut: "attente", date: "12/04/2026", assign: "Zakaria A.", comments: [] },
@@ -227,12 +229,12 @@ const TICKETS_INIT = [
 ];
 
 const USERS_INIT = [
-  { initials: "AA", name: "Ahmed Ataki",    email: "ahmed@bayan.ma",   role: "admin", color: "#4F46E5" },
-  { initials: "KA", name: "Karim Alami",    email: "karim@bayan.ma",   role: "resp",  color: "#10B981" },
-  { initials: "SL", name: "Sarah Lemarié",  email: "sarah@bayan.ma",   role: "emp",   color: "#F59E0B" },
-  { initials: "ZA", name: "Zakaria Achraf", email: "zakaria@bayan.ma", role: "emp",   color: "#8B5CF6" },
-  { initials: "AS", name: "Aya Saïl",       email: "aya@bayan.ma",     role: "resp",  color: "#EC4899" },
-  { initials: "OM", name: "Omar Almsaddek", email: "omar@bayan.ma",    role: "emp",   color: "#0EA5E9" },
+  { initials: "AA", nom: "Ahmed Ataki",    email: "ahmed@bayan.ma",   role: "admin", color: "#4F46E5" },
+  { initials: "KA", nom: "Karim Alami",    email: "karim@bayan.ma",   role: "resp",  color: "#10B981" },
+  { initials: "SL", nom: "Sarah Lemarié",  email: "sarah@bayan.ma",   role: "emp",   color: "#F59E0B" },
+  { initials: "ZA", nom: "Zakaria Achraf", email: "zakaria@bayan.ma", role: "emp",   color: "#8B5CF6" },
+  { initials: "AS", nom: "Aya Saïl",       email: "aya@bayan.ma",     role: "resp",  color: "#EC4899" },
+  { initials: "OM", nom: "Omar Almsaddek", email: "omar@bayan.ma",    role: "emp",   color: "#0EA5E9" },
 ];
 
 const NOTIFS_INIT = [
@@ -261,7 +263,7 @@ const services = [
   { name: "Logistique",   pct: 24, color: "#10B981" },
   { name: "RH",           pct: 19, color: "#F59E0B" },
   { name: "Finance",      pct: 12, color: "#8B5CF6" },
-  { name: "Maintenance",  pct: 7,  color: "#9CA3AF" },
+  { name: "Extérieure",   pct: 7,  color: "#9CA3AF" },
 ];
 
 const intervenants = [
@@ -581,16 +583,30 @@ const TicketsPage = ({ tickets, setTickets, showToast }) => {
 
 const UtilisateursPage = ({ users, setUsers, showToast }) => {
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", role: "emp" });
+  const [form, setForm] = useState({ nom: "", email: "", password: "", role: "emp" });
 
-  const addUser = () => {
-    if (!form.name.trim() || !form.email.trim()) return;
-    const initials = form.name.trim().split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const newUser = { ...form, initials, color: colors[users.length % colors.length] };
-    setUsers(prev => [...prev, newUser]);
-    setForm({ name: "", email: "", role: "emp" });
-    setShowModal(false);
-    showToast("👤 Utilisateur ajouté !");
+  const addUser = async () => {
+    if (!form.nom.trim() || !form.email.trim() || !form.password.trim()) {
+      showToast("⚠️ Veuillez remplir tous les champs.");
+      return;
+    }
+    const initials = form.nom.trim().split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    const newUser = { nom: form.nom, email: form.email, role: form.role, initials, color: colors[users.length % colors.length] };
+    const roleMap = { emp: "employe", resp: "responsable", admin: "admin", intervenant: "intervenant" };
+    try {
+      await usersAPI.create({
+        nom: form.nom.trim(),
+        email: form.email.trim(),
+        password: form.password.trim(),
+        role: roleMap[form.role] || form.role,
+      });
+      setUsers(prev => [...prev, newUser]);
+      setForm({ nom: "", email: "", password: "", role: "emp" });
+      setShowModal(false);
+      showToast("👤 Utilisateur ajouté ! Il peut maintenant se connecter.");
+    } catch (err) {
+      showToast("⚠️ Erreur: " + err.message);
+    }
   };
 
   const deleteUser = (email) => {
@@ -608,7 +624,7 @@ const UtilisateursPage = ({ users, setUsers, showToast }) => {
         <div className="user-row" key={u.email}>
           <div className="ur-avatar" style={{ background: u.color }}>{u.initials}</div>
           <div>
-            <div className="ur-name">{u.name}</div>
+            <div className="ur-name">{u.nom}</div>
             <div className="ur-email">{u.email}</div>
           </div>
           <span className={`ur-role-badge ${u.role}`} style={{ marginLeft: "auto" }}>{roleLabel[u.role]}</span>
@@ -622,8 +638,9 @@ const UtilisateursPage = ({ users, setUsers, showToast }) => {
           <div className="modal-box">
             <div className="modal-title">Ajouter un utilisateur</div>
             {[
-              { label: "Nom complet", key: "name", type: "text", placeholder: "ex: Mohammed Alami" },
-              { label: "Email",       key: "email", type: "email", placeholder: "nom@bayan.ma" },
+              { label: "Nom complet",  key: "nom",      type: "text",     placeholder: "ex: Mohammed Alami" },
+              { label: "Email",        key: "email",    type: "email",    placeholder: "nom@bayan.ma" },
+              { label: "Mot de passe", key: "password", type: "password", placeholder: "••••••••" },
             ].map(f => (
               <div className="modal-field" key={f.key}>
                 <label className="modal-label">{f.label}</label>
@@ -636,6 +653,7 @@ const UtilisateursPage = ({ users, setUsers, showToast }) => {
               <select className="modal-input" value={form.role} onChange={e => setForm(prev => ({ ...prev, role: e.target.value }))}>
                 <option value="emp">Employé</option>
                 <option value="resp">Responsable</option>
+                <option value="intervenant">Intervenant</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
@@ -733,6 +751,7 @@ const pageTitles = { dashboard: "Gestion des Réclamations", tickets: "Toutes le
 // ── MAIN ──────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
   const [activePage,  setActivePage]  = useState("dashboard");
   const [tickets,     setTickets]     = useState(TICKETS_INIT);
   const [users,       setUsers]       = useState(USERS_INIT);
@@ -803,10 +822,12 @@ export default function Dashboard() {
             ))}
           </nav>
           <div className="sidebar-user">
-            <div className="user-avatar">AA</div>
+            <div className="user-avatar" style={{ background: "#4F46E5" }}>
+              {currentUser ? currentUser.nom.trim().split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase() : "?"}
+            </div>
             <div>
-              <div className="user-name">Ahmed Ataki</div>
-              <div className="user-role">Enterprise Admin</div>
+              <div className="user-name">{currentUser?.nom || "Utilisateur"}</div>
+              <div className="user-role">{currentUser?.role || ""}</div>
             </div>
           </div>
         </aside>
@@ -879,7 +900,7 @@ export default function Dashboard() {
               </div>
 
               {/* LOGOUT */}
-              <button className="icon-btn" onClick={() => navigate("/")} title="Déconnexion">
+              <button className="icon-btn" onClick={async () => { await logout(); navigate("/login"); }} title="Déconnexion">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l3-3-3-3M13 8H6" stroke="#6B7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
