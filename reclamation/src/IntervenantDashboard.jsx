@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MessagerieePage, { MSG_CSS } from "./MessagerieePage";
 
@@ -276,6 +276,169 @@ const CSS = `
 `;
 
 
+const LS_USER = "bayan_current_user";
+const LS_TICKETS = "bayan_tickets";
+
+function getCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_USER) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function getAllTickets() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_TICKETS) || "[]");
+  } catch {
+    return [];
+  }
+}
+function saveAllTickets(tickets) {
+  localStorage.setItem(LS_TICKETS, JSON.stringify(tickets));
+}
+
+function checkIsExternal(user) {
+  const all = JSON.stringify(user || {}).toLowerCase();
+  return all.includes("externe") || all.includes("external");
+}
+
+
+function initials(name = "") {
+  const result = String(name)
+    .trim()
+    .split(/\s+/)
+    .map((x) => x[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return result || "?";
+}
+
+function sameId(a, b) {
+  const clean = (v) => String(v || "")
+    .replace("ID-", "")
+    .replace(/^0+/, "");
+
+  return clean(a) === clean(b);
+}
+
+function normalizePriority(p) {
+  const value = String(p || "normale").toLowerCase();
+  if (value === "normal") return "normale";
+  return value;
+}
+
+function displayTicketId(id) {
+  const value = String(id || "");
+  if (value.startsWith("ID-")) return value;
+  return `ID-${value.padStart(5, "0")}`;
+}
+
+function makeTimeline(t) {
+  if (Array.isArray(t.timeline) && t.timeline.length > 0) return t.timeline;
+
+  return [
+    {
+      icon: "🔵",
+      bg: "#EEF2FF",
+      text: <><strong>Réclamation créée</strong></>,
+      time: t.date || t.created_at || nowStr(),
+    },
+    {
+      icon: "👤",
+      bg: "#FEF3C7",
+      text: <><strong>Affectée à vous</strong></>,
+      time: t.assigned_at || t.date || nowStr(),
+    },
+  ];
+}
+
+function ticketToIntervenantCard(t) {
+  const statut = t.statut || t.status || "attente";
+  const col = COLUMNS.find((c) => c.key === statut);
+
+  return {
+    rawId: t.rawId || t.id,
+    id: displayTicketId(t.id),
+    titre: t.titre || t.title || "Sans titre",
+    service: t.service || t.serviceName || "Support IT",
+    cat: t.categorie || t.cat || t.category || "Autre",
+    priorite: normalizePriority(t.priorite || t.priority),
+    statut,
+    date: t.date || (t.created_at ? new Date(t.created_at).toLocaleDateString("fr-FR") : ""),
+    prog: t.prog ?? col?.prog ?? 0,
+    description: t.description || t.desc || "",
+    affectePar: t.affectePar || t.created_by_name || t.createdBy || "Responsable",
+    timeline: makeTimeline(t),
+    comments: t.comments || t.commentaires || [],
+    piece_jointe: t.piece_jointe || t.attachmentName || t.fileName || null,
+    assignType: t.assignType || t.intervenantType || t.assignee?.type || null,
+    assignee_id: t.assignee_id || t.assigned_to || t.assignId || t.intervenant_id || null,
+  };
+}
+function getTicketsForIntervenant(currentUser) {
+  const savedTickets = getAllTickets();
+
+  if (savedTickets.length === 0) {
+    return TICKETS_INIT;
+  }
+
+  const meId = String(currentUser?.id || "").trim();
+  const myName = String(currentUser?.nom || currentUser?.name || "").trim().toLowerCase();
+  const myEmail = String(currentUser?.email || "").trim().toLowerCase();
+  const isExternal = checkIsExternal(currentUser);
+
+  const mine = savedTickets.filter((t) => {
+    const ticketText = JSON.stringify(t || {}).toLowerCase();
+
+    const assignedIds = [
+      t.assignee_id,
+      t.assigned_to,
+      t.assignId,
+      t.intervenant_id,
+      t.intervenantId,
+      t.assignee?.id,
+      t.assignedTo?.id,
+      t.intervenant?.id,
+    ].filter((v) => v !== undefined && v !== null).map((v) => String(v).trim());
+
+    const assignedToMeById = meId && assignedIds.includes(meId);
+    const assignedToMeByName = myName && ticketText.includes(myName);
+    const assignedToMeByEmail = myEmail && ticketText.includes(myEmail);
+
+    const assignedToExternal =
+      ticketText.includes("externe") ||
+      ticketText.includes("external") ||
+      String(t.assignType || "").toLowerCase() === "externe" ||
+      String(t.intervenantType || "").toLowerCase() === "externe" ||
+      String(t.type_intervenant || "").toLowerCase() === "externe" ||
+      String(t.typeIntervenant || "").toLowerCase() === "externe";
+
+    return (
+      assignedToMeById ||
+      assignedToMeByName ||
+      assignedToMeByEmail ||
+      (isExternal && assignedToExternal)
+    );
+  });
+
+  return mine.map(ticketToIntervenantCard);
+}
+
+function updateTicketInStorage(ticketId, updater) {
+  const all = getAllTickets();
+  if (all.length === 0) return;
+
+  const updated = all.map((t) => {
+    if (sameId(t.id || t.rawId, ticketId)) return updater(t);
+    return t;
+  });
+
+  saveAllTickets(updated);
+}
+
 // ── DATA ───────────────────────────────────────────────────────────────────
 const TICKETS_INIT = [
   {
@@ -499,17 +662,17 @@ const KanbanColumn = ({ col, tickets, colIndex, onOpen, onQuickAction }) => (
 );
 
 // ── DETAIL PANEL ───────────────────────────────────────────────────────────
-const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
+const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve, onAddComment }) => {
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
-  const colIndex = COL_KEYS.indexOf(ticket.statut);
   const progVal  = { attente: 0, cours: 50, resolu: 100 }[ticket.statut];
 
   const submitComment = () => {
     if (!comment.trim()) return;
-    setComments((prev) => [...prev, { text: comment.trim(), time: nowStr() }]);
+    onAddComment(ticket.id, comment.trim());
     setComment("");
   };
+
+  const comments = ticket.comments || [];
 
   return (
     <div className="emp-detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -527,7 +690,6 @@ const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
           <span className={`emp-status-badge ${ticket.statut}`}>{statutLabel[ticket.statut]}</span>
         </div>
 
-        {/* ── ACTIONS ── */}
         {ticket.statut === "resolu" ? (
           <div className="iv-resolved-banner">✅ Cette réclamation est résolue</div>
         ) : (
@@ -551,6 +713,7 @@ const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
           ["Catégorie",    ticket.cat],
           ["Date",         ticket.date],
           ["Affectée par", ticket.affectePar],
+          ...(ticket.piece_jointe ? [["Pièce jointe", `📎 ${ticket.piece_jointe}`]] : []),
         ].map(([k, v]) => (
           <div className="emp-detail-row" key={k}>
             <span className="emp-detail-key">{k}</span>
@@ -570,9 +733,10 @@ const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
 
         <div className="emp-divider"/>
         <div className="emp-section-title">Description</div>
-        <p style={{ fontSize:13, color:"#374151", lineHeight:1.6, marginBottom:16 }}>{ticket.description}</p>
+        <p style={{ fontSize:13, color:"#374151", lineHeight:1.6, marginBottom:16 }}>
+          {ticket.description || "Aucune description."}
+        </p>
 
-        {/* ── COMMENTAIRE ── */}
         {ticket.statut !== "resolu" && (
           <>
             <div className="emp-divider"/>
@@ -587,10 +751,18 @@ const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
               Envoyer
             </button>
             <div style={{ clear:"both" }}/>
+          </>
+        )}
+
+        {comments.length > 0 && (
+          <>
+            <div className="emp-divider"/>
+            <div className="emp-section-title">Commentaires</div>
             {comments.map((c, i) => (
               <div key={i} style={{ marginTop:10, background:"#F9FAFB", borderRadius:8, padding:"9px 12px", fontSize:12.5, color:"#374151" }}>
-                <div>{c.text}</div>
-                <div style={{ fontSize:10.5, color:"#B0B7C3", marginTop:3 }}>{c.time}</div>
+                <div><strong>{c.author || c.user?.nom || "Utilisateur"}</strong></div>
+                <div>{c.body || c.contenu || c.text}</div>
+                <div style={{ fontSize:10.5, color:"#B0B7C3", marginTop:3 }}>{c.date || c.time}</div>
               </div>
             ))}
           </>
@@ -598,7 +770,7 @@ const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
 
         <div className="emp-divider"/>
         <div className="emp-section-title">Historique</div>
-        {ticket.timeline.map((item, i) => (
+        {(ticket.timeline || []).map((item, i) => (
           <div className="emp-tl-item" key={i}>
             <div className="emp-tl-icon" style={{ background: item.bg }}>{item.icon}</div>
             <div>
@@ -613,40 +785,94 @@ const DetailPanel = ({ ticket, onClose, onMove, onConfirmResolve }) => {
 };
 
 // ── PAGE : MES RÉCLAMATIONS ────────────────────────────────────────────────
-const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
+const MesReclamationsPage = ({ tickets, setTickets, showToast, currentUser }) => {
   const [activeFilter, setActiveFilter] = useState("toutes");
   const [selected,     setSelected]     = useState(null);
   const [confirmTkt,   setConfirmTkt]   = useState(null);
 
   const filterFn = (t) => {
-    if (activeFilter === "creees")    return false; // interdit
+    if (activeFilter === "creees")    return false;
     if (activeFilter === "urgentes")  return t.priorite === "urgent";
     return true;
   };
 
   const getCol = (statut) => tickets.filter((t) => t.statut === statut && filterFn(t));
 
-  const moveTicket = (id, toStatut) => {
-    setTickets((prev) => prev.map((t) => {
-      if (t.id !== id || t.statut === toStatut) return t;
-      const key = `${t.statut}→${toStatut}`;
-      const tr  = TRANSITIONS[key] || { icon: "✏️", bg: "#F3F4F6", text: <>Statut mis à jour</> };
-      const col = COLUMNS.find((c) => c.key === toStatut);
-      return { ...t, statut: toStatut, prog: col.prog, timeline: [...t.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }] };
+const moveTicket = (id, toStatut) => {
+  const col = COLUMNS.find((c) => c.key === toStatut);
+
+  const updatedVisibleTickets = tickets.map((t) => {
+    if (!sameId(t.id, id) || t.statut === toStatut) return t;
+
+    return {
+      ...t,
+      statut: toStatut,
+      prog: col.prog,
+      timeline: [
+        ...(t.timeline || []),
+        {
+          icon: toStatut === "resolu" ? "✅" : "▶️",
+          bg: toStatut === "resolu" ? "#D1FAE5" : "#FEF3C7",
+          text: toStatut === "resolu"
+            ? <><strong>Résolue</strong> par vous</>
+            : <><strong>Prise en charge</strong> — en cours de traitement</>,
+          time: nowStr(),
+        },
+      ],
+    };
+  });
+
+  setTickets(updatedVisibleTickets);
+
+  const allTickets = getAllTickets();
+
+  const updatedAllTickets = allTickets.map((t) => {
+    if (!sameId(t.id || t.rawId, id)) return t;
+
+    return {
+      ...t,
+      statut: toStatut,
+      prog: col.prog,
+    };
+  });
+
+  saveAllTickets(updatedAllTickets);
+
+  setSelected((prev) => {
+    if (!prev || !sameId(prev.id, id)) return prev;
+    return updatedVisibleTickets.find((t) => sameId(t.id, id)) || prev;
+  });
+
+  showToast(`✅ Réclamation passée en « ${statutLabel[toStatut]} »`);
+};
+  const addComment = (ticketId, body) => {
+    const newComment = {
+      author: currentUser?.nom || currentUser?.name || "Intervenant",
+      body,
+      date: nowStr(),
+    };
+
+    updateTicketInStorage(ticketId, (t) => ({
+      ...t,
+      comments: [...(t.comments || t.commentaires || []), newComment],
     }));
+
+    setTickets((prev) => prev.map((t) => {
+      if (!sameId(t.id, ticketId)) return t;
+      return { ...t, comments: [...(t.comments || []), newComment] };
+    }));
+
     setSelected((prev) => {
-      if (!prev || prev.id !== id) return prev;
-      const col = COLUMNS.find((c) => c.key === toStatut);
-      const key = `${prev.statut}→${toStatut}`;
-      const tr  = TRANSITIONS[key] || { icon: "✏️", bg: "#F3F4F6", text: <>Statut mis à jour</> };
-      return { ...prev, statut: toStatut, prog: col.prog, timeline: [...prev.timeline, { icon: tr.icon, bg: tr.bg, text: tr.text, time: nowStr() }] };
+      if (!prev || !sameId(prev.id, ticketId)) return prev;
+      return { ...prev, comments: [...(prev.comments || []), newComment] };
     });
-    showToast(`✅ Réclamation passée en « ${statutLabel[toStatut]} »`);
+
+    showToast("💬 Commentaire ajouté");
   };
 
   const handleQuickAction = (id, action) => {
     if (action === "resolve") {
-      const t = tickets.find((x) => x.id === id);
+      const t = tickets.find((x) => sameId(x.id, id));
       if (t) setConfirmTkt(t);
     } else {
       moveTicket(id, action);
@@ -703,6 +929,7 @@ const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
           onClose={() => setSelected(null)}
           onMove={moveTicket}
           onConfirmResolve={(t) => setConfirmTkt(t)}
+          onAddComment={addComment}
         />
       )}
 
@@ -718,60 +945,78 @@ const MesReclamationsPage = ({ tickets, setTickets, showToast }) => {
 };
 
 // ── PAGE : MON PROFIL ──────────────────────────────────────────────────────
-const MonProfilPage = () => (
-  <div className="emp-profil-card">
-    <div className="emp-profil-header">
-      <div className="emp-profil-av" style={{ background: "#8B5CF6" }}>KA</div>
-      <div>
-        <div className="emp-profil-name">Khalid Amine</div>
-        <div className="emp-profil-email">k.amine@prestataire-tech.ma</div>
-        <div className="emp-profil-badge">Intervenant Externe</div>
-      </div>
-    </div>
-    {[
-      ["Société",        "Prestataire Tech Maroc"],
-      ["Spécialité",     "Maintenance IT & Réseau"],
-      ["Téléphone",      "+212 6 11 22 33 44"],
-      ["Contrat",        "Prestation No. 2023-041"],
-      ["Responsable",    "Marc Lefebvre (Support IT)"],
-      ["Accès accordé",  "01 Oct 2023"],
-    ].map(([k, v]) => (
-      <div className="emp-profil-row" key={k}>
-        <span className="emp-profil-key">{k}</span>
-        <span className="emp-profil-val">{v}</span>
-      </div>
-    ))}
+const MonProfilPage = ({ currentUser }) => {
+  const name = currentUser?.nom || currentUser?.name || "Intervenant";
+  const isExternal = checkIsExternal(currentUser);
+  const type = isExternal ? "EXTERNE" : "INTERNE";
+  const badgeText = isExternal ? "Intervenant Externe" : "Intervenant Interne";
 
-    {/* Droits */}
-    <div style={{ marginTop:18, background:"#FAFBFF", border:"1px solid #E0E7FF", borderRadius:10, padding:"14px 16px" }}>
-      <div style={{ fontSize:12, fontWeight:700, color:"#3730A3", marginBottom:10 }}>Droits d'accès</div>
+  return (
+    <div className="emp-profil-card">
+      <div className="emp-profil-header">
+        <div className="emp-profil-av" style={{ background: currentUser?.couleur || "#8B5CF6" }}>
+          {currentUser?.initiales || initials(name)}
+        </div>
+        <div>
+          <div className="emp-profil-name">{name}</div>
+          <div className="emp-profil-email">{currentUser?.email || "intervenant@bayan.ma"}</div>
+          <div className="emp-profil-badge">{badgeText}</div>
+        </div>
+      </div>
+
       {[
-        { ok: true,  label: "Consulter les réclamations affectées" },
-        { ok: true,  label: "Passer une réclamation en cours" },
-        { ok: true,  label: "Marquer une réclamation comme résolue" },
-        { ok: true,  label: "Ajouter des commentaires de suivi" },
-        { ok: false, label: "Soumettre une nouvelle réclamation" },
-        { ok: false, label: "Modifier ou supprimer des réclamations" },
-        { ok: false, label: "Voir les réclamations non affectées" },
-      ].map(({ ok, label }) => (
-        <div key={label} style={{ display:"flex", alignItems:"center", gap:8, fontSize:12.5, color: ok ? "#374151" : "#9CA3AF", padding:"3px 0" }}>
-          <span>{ok ? "✅" : "❌"}</span><span style={{ textDecoration: ok ? "none" : "line-through" }}>{label}</span>
+        ["Rôle", "Intervenant"],
+        ["Type", type],
+        ["Droits", "Voir / traiter les réclamations affectées"],
+      ].map(([k, v]) => (
+        <div className="emp-profil-row" key={k}>
+          <span className="emp-profil-key">{k}</span>
+          <span className="emp-profil-val">{v}</span>
         </div>
       ))}
+
+      <div style={{ marginTop:18, background:"#FAFBFF", border:"1px solid #E0E7FF", borderRadius:10, padding:"14px 16px" }}>
+        <div style={{ fontSize:12, fontWeight:700, color:"#3730A3", marginBottom:10 }}>Droits d'accès</div>
+        {[
+          { ok: true,  label: "Consulter les réclamations affectées" },
+          { ok: true,  label: "Passer une réclamation en cours" },
+          { ok: true,  label: "Marquer une réclamation comme résolue" },
+          { ok: true,  label: "Ajouter des commentaires de suivi" },
+          { ok: false, label: "Soumettre une nouvelle réclamation" },
+          { ok: false, label: "Modifier ou supprimer des réclamations" },
+          { ok: false, label: "Voir les réclamations non affectées" },
+        ].map(({ ok, label }) => (
+          <div key={label} style={{ display:"flex", alignItems:"center", gap:8, fontSize:12.5, color: ok ? "#374151" : "#9CA3AF", padding:"3px 0" }}>
+            <span>{ok ? "✅" : "❌"}</span><span style={{ textDecoration: ok ? "none" : "line-through" }}>{label}</span>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── MAIN ───────────────────────────────────────────────────────────────────
 export default function IntervenantDashboard() {
   const navigate = useNavigate();
 
+  const [currentUser] = useState(() => getCurrentUser());
   const [activePage, setActivePage] = useState("mes");
-  const [tickets,    setTickets]    = useState(TICKETS_INIT);
+   const [tickets, setTickets] = useState(() => getTicketsForIntervenant(getCurrentUser()));
   const [notifs,     setNotifs]     = useState(NOTIFS_INIT);
   const [showNotifs, setShowNotifs] = useState(false);
   const [toast,      setToast]      = useState(null);
   const toastTimer = useRef(null);
+// Add this useEffect after the existing ones
+useEffect(() => {
+  const onFocus = () => {
+    setTickets(getTicketsForIntervenant(currentUser));
+  };
+  window.addEventListener("focus", onFocus);
+  return () => window.removeEventListener("focus", onFocus);
+}, [currentUser]);
+  useEffect(() => {
+    setTickets(getTicketsForIntervenant(currentUser));
+  }, [currentUser]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -779,6 +1024,15 @@ export default function IntervenantDashboard() {
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   };
 
+  const doLogout = () => {
+    localStorage.removeItem(LS_USER);
+    navigate("/login");
+  };
+
+  const userName = currentUser?.nom || currentUser?.name || "Intervenant";
+  const userInitials = currentUser?.initiales || initials(userName);
+ 
+const isExternal = checkIsExternal(currentUser);
   const pageTitles = { mes: "Mes réclamations affectées", messagerie: "Messagerie", profil: "Mon profil" };
 
   const navItems = [
@@ -798,10 +1052,28 @@ export default function IntervenantDashboard() {
 
   const renderPage = () => {
     switch (activePage) {
-      case "mes":         return <MesReclamationsPage tickets={tickets} setTickets={setTickets} showToast={showToast} />;
-      case "messagerie":  return <MessagerieePage />;
-      case "profil":      return <MonProfilPage />;
-      default:            return <MesReclamationsPage tickets={tickets} setTickets={setTickets} showToast={showToast} />;
+      case "mes":
+        return (
+          <MesReclamationsPage
+            tickets={tickets}
+            setTickets={setTickets}
+            showToast={showToast}
+            currentUser={currentUser}
+          />
+        );
+      case "messagerie":
+        return <MessagerieePage />;
+      case "profil":
+        return <MonProfilPage currentUser={currentUser} />;
+      default:
+        return (
+          <MesReclamationsPage
+            tickets={tickets}
+            setTickets={setTickets}
+            showToast={showToast}
+            currentUser={currentUser}
+          />
+        );
     }
   };
 
@@ -835,11 +1107,13 @@ export default function IntervenantDashboard() {
           </nav>
 
           <div className="emp-sidebar-user">
-            <div className="emp-user-avatar" style={{ background: "#8B5CF6" }}>KA</div>
+            <div className="emp-user-avatar" style={{ background: currentUser?.couleur || "#8B5CF6" }}>
+              {userInitials}
+            </div>
             <div>
-              <div className="emp-user-name">Khalid Amine</div>
+              <div className="emp-user-name">{userName}</div>
               <div className="emp-user-role">Intervenant</div>
-              <div className="iv-ext-badge">🔒 EXTERNE</div>
+              <div className="iv-ext-badge">🔒 {isExternal ? "EXTERNE" : "INTERNE"}</div>
             </div>
           </div>
         </aside>
@@ -867,7 +1141,7 @@ export default function IntervenantDashboard() {
                   <span className="emp-notif-dot">{notifs.filter(n => n.unread).length}</span>
                 )}
               </button>
-              <button className="emp-icon-btn" onClick={() => navigate("/login")} title="Déconnexion">
+              <button className="emp-icon-btn" onClick={doLogout} title="Déconnexion">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l3-3-3-3M13 8H6"
                     stroke="#6B7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>

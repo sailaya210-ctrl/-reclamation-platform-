@@ -395,7 +395,7 @@ const handleAttachFile = async (e) => {
  
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); messagesAPI.send(activeContact.id, text); }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   const insertEmoji = (emoji) => {
@@ -554,11 +554,7 @@ const handleAttachFile = async (e) => {
                        {item.fichier_nom && (
   <a
   className="msg-file"
-  href={
-    item.file_path
-      ? `http://localhost:8000/storage/${item.file_path}`
-      : `http://localhost:8000/storage/messages/${item.fichier_nom}`
-  }
+  href={item.file_url || item.file_path || "#"}
   target="_blank"
   rel="noopener noreferrer"
 >

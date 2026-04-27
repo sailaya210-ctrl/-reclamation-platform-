@@ -214,7 +214,7 @@ const CSS = `
   @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
   /* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
-
+.ur-role-badge.intervenant { background: #E0F2FE; color: #0284C7; }
 /* TABLET / SMALL LAPTOP (≤ 1024px) */
 @media (max-width: 1024px) {
   .sidebar { width: 180px; }
@@ -346,7 +346,7 @@ const NOTIFS_INIT = [
 ];
 
 const statutLabel = { urgent: "Urgent", cours: "En cours", resolu: "Résolu", attente: "En attente" };
-const roleLabel   = { admin: "Admin", resp: "Responsable", emp: "Employé" };
+const roleLabel = { admin: "Admin", resp: "Responsable", emp: "Employé", intervenant: "Intervenant" };
 const colors      = ["#4F46E5","#10B981","#F59E0B","#8B5CF6","#EC4899","#0EA5E9","#EF4444","#14B8A6"];
 
 const barData = [
@@ -683,35 +683,56 @@ const TicketsPage = ({ tickets, setTickets, showToast }) => {
 
 const UtilisateursPage = ({ users, setUsers, showToast }) => {
   const [showModal, setShowModal] = useState(false);
+  const [editUser, setEditUser] = useState(null); // user being viewed/edited
+  const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ nom: "", email: "", password: "", role: "emp" });
+
+  // Load stored passwords (stored separately for security)
+  const [passwords, setPasswords] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("bayan_passwords") || "{}"); }
+    catch { return {}; }
+  });
+
+  const savePasswords = (updated) => {
+    setPasswords(updated);
+    localStorage.setItem("bayan_passwords", JSON.stringify(updated));
+  };
 
   const addUser = async () => {
     if (!form.nom.trim() || !form.email.trim() || !form.password.trim()) {
-      showToast("⚠️ Veuillez remplir tous les champs.");
-      return;
+      showToast("⚠️ Veuillez remplir tous les champs."); return;
     }
     const initials = form.nom.trim().split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
     const newUser = { nom: form.nom, email: form.email, role: form.role, initials, color: colors[users.length % colors.length] };
     const roleMap = { emp: "employe", resp: "responsable", admin: "admin", intervenant: "intervenant" };
     try {
       await usersAPI.create({
-        nom: form.nom.trim(),
-        email: form.email.trim(),
-        password: form.password.trim(),
-        role: roleMap[form.role] || form.role,
+        nom: form.nom.trim(), email: form.email.trim(),
+        password: form.password.trim(), role: roleMap[form.role] || form.role,
       });
       setUsers(prev => [...prev, newUser]);
+      savePasswords({ ...passwords, [form.email]: form.password });
       setForm({ nom: "", email: "", password: "", role: "emp" });
       setShowModal(false);
-      showToast("👤 Utilisateur ajouté ! Il peut maintenant se connecter.");
-    } catch (err) {
-      showToast("⚠️ Erreur: " + err.message);
-    }
+      showToast("👤 Utilisateur ajouté !");
+    } catch (err) { showToast("⚠️ Erreur: " + err.message); }
   };
 
   const deleteUser = (email) => {
     setUsers(prev => prev.filter(u => u.email !== email));
+    const updated = { ...passwords }; delete updated[email];
+    savePasswords(updated);
+    setEditUser(null);
     showToast("🗑️ Utilisateur supprimé.");
+  };
+
+  const saveEdit = () => {
+    setUsers(prev => prev.map(u => u.email === editUser.email ? { ...editUser } : u));
+    if (editUser._newPassword) {
+      savePasswords({ ...passwords, [editUser.email]: editUser._newPassword });
+    }
+    setEditUser(null);
+    showToast("✅ Modifications enregistrées !");
   };
 
   return (
@@ -720,19 +741,83 @@ const UtilisateursPage = ({ users, setUsers, showToast }) => {
         <div className="chart-title" style={{ marginBottom: 0 }}>Utilisateurs ({users.length})</div>
         <button className="btn-add" onClick={() => setShowModal(true)}>+ Ajouter</button>
       </div>
+
       {users.map((u) => (
-        <div className="user-row" key={u.email}>
+        <div className="user-row" key={u.email} style={{ cursor: "pointer" }} onClick={() => { setShowPass(false); setEditUser({ ...u, _newPassword: "" }); }}>
           <div className="ur-avatar" style={{ background: u.color }}>{u.initials}</div>
           <div>
             <div className="ur-name">{u.nom}</div>
             <div className="ur-email">{u.email}</div>
           </div>
           <span className={`ur-role-badge ${u.role}`} style={{ marginLeft: "auto" }}>{roleLabel[u.role]}</span>
-          {u.role !== "admin" && (
-            <button className="btn-delete" onClick={() => deleteUser(u.email)}>Supprimer</button>
-          )}
+          <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 10 }}>Voir →</span>
         </div>
       ))}
+
+      {/* ── EDIT / VIEW PANEL ── */}
+      {editUser && (
+        <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && setEditUser(null)}>
+          <div className="detail-panel">
+            <div className="detail-close">
+              <span className="detail-id">Fiche utilisateur</span>
+              <button className="detail-close-btn" onClick={() => setEditUser(null)}>✕</button>
+            </div>
+
+            {/* Avatar */}
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22 }}>
+              <div className="int-avatar" style={{ background: editUser.color, width: 52, height: 52, fontSize: 16 }}>{editUser.initials}</div>
+              <div>
+                <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 17, color: "#0F1117" }}>{editUser.nom}</div>
+                <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>{editUser.email}</div>
+              </div>
+            </div>
+
+            <div className="detail-divider"/>
+
+            {/* Nom */}
+            <div className="modal-field">
+              <label className="modal-label">Nom complet</label>
+              <input className="modal-input" value={editUser.nom}
+                onChange={e => setEditUser(prev => ({ ...prev, nom: e.target.value,
+                  initials: e.target.value.trim().split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()
+                }))}/>
+            </div>
+
+            {/* Email */}
+            <div className="modal-field">
+              <label className="modal-label">Email</label>
+              <input className="modal-input" type="email" value={editUser.email}
+                onChange={e => setEditUser(prev => ({ ...prev, email: e.target.value }))}/>
+            </div>
+
+           
+
+            {/* Role */}
+            <div className="modal-field">
+              <label className="modal-label">Rôle</label>
+              <select className="modal-input" value={editUser.role}
+                onChange={e => setEditUser(prev => ({ ...prev, role: e.target.value }))}>
+                <option value="emp">Employé</option>
+                <option value="resp">Responsable</option>
+                <option value="intervenant">Intervenant</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div className="detail-divider"/>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn-confirm" style={{ flex: 1 }} onClick={saveEdit}>💾 Enregistrer</button>
+              {editUser.role !== "admin" && (
+                <button className="btn-delete" style={{ flex: "0 0 auto", padding: "9px 16px" }}
+                  onClick={() => deleteUser(editUser.email)}>🗑️ Supprimer</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD MODAL ── */}
       {showModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal-box">
@@ -854,7 +939,18 @@ export default function Dashboard() {
   const { currentUser, logout } = useAuth();
   const [activePage,  setActivePage]  = useState("dashboard");
   const [tickets,     setTickets]     = useState(TICKETS_INIT);
-  const [users,       setUsers]       = useState(USERS_INIT);
+ const [users, setUsers] = useState(() => {
+  try {
+    const stored = localStorage.getItem("bayan_users");
+    return stored ? JSON.parse(stored) : USERS_INIT;
+  } catch {
+    return USERS_INIT;
+  }
+});
+
+useEffect(() => {
+  localStorage.setItem("bayan_users", JSON.stringify(users));
+}, [users]);
   const [notifs,      setNotifs]      = useState(NOTIFS_INIT);
   const [showNotifs,  setShowNotifs]  = useState(false);
   const [searchQ,     setSearchQ]     = useState("");
